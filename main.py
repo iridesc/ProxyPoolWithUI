@@ -1,11 +1,11 @@
-# encoding: utf-8
-
-import sys, os, signal
-sys.path.append(os.path.dirname(__file__) + os.sep + '../')
 from multiprocessing import Process
 import time
+import sys
+import os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
 from proc import run_fetcher, run_validator
 from api import api
+
 
 class Item:
     def __init__(self, target, name):
@@ -13,6 +13,7 @@ class Item:
         self.name = name
         self.process = None
         self.start_time = 0
+
 
 def main():
     processes = []
@@ -34,12 +35,13 @@ def main():
                     print(f'进程{p.name}异常退出, exitcode={p.process.exitcode}')
                     p.process.terminate()
                     p.process = None
-                elif p.start_time + 60 * 60 < time.time(): # 最长运行1小时就重启
+                elif p.start_time + 60 * 60 < time.time():  # 最长运行1小时就重启
                     print(f'进程{p.name}运行太久，重启')
                     p.process.terminate()
                     p.process = None
 
         time.sleep(0.2)
+
 
 def citest():
     """
@@ -56,13 +58,14 @@ def citest():
         p.process.start()
         print(f'running {p.name}, pid={p.process.pid}')
         p.start_time = time.time()
-    
+
     time.sleep(10)
 
     for p in processes:
         assert p.process is not None
         assert p.process.is_alive()
         p.process.terminate()
+
 
 if __name__ == '__main__':
     try:
