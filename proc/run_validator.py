@@ -12,6 +12,7 @@ import time
 import requests
 from func_timeout import func_set_timeout
 from func_timeout.exceptions import FunctionTimedOut
+from retry import retry
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS
@@ -33,7 +34,7 @@ def main():
 
     in_que = Queue()
     out_que = Queue()
-    running_proxies = set() # 储存哪些代理正在运行，以字符串的形式储存
+    running_proxies = set()  # 储存哪些代理正在运行，以字符串的形式储存
 
     threads = []
     for _ in range(VALIDATE_THREAD_NUM):
@@ -52,7 +53,7 @@ def main():
         if out_cnt > 0:
             logger.info(f'完成了{out_cnt}个代理的验证')
 
-        # 如果正在进行验证的代理足够多，那么就不着急添加新代理        
+        # 如果正在进行验证的代理足够多，那么就不着急添加新代理
         if len(running_proxies) >= VALIDATE_THREAD_NUM:
             time.sleep(PROC_VALIDATOR_SLEEP)
             continue
@@ -66,22 +67,26 @@ def main():
                 running_proxies.add(uri)
                 in_que.put(proxy)
                 added_cnt += 1
-        
+
         if added_cnt == 0:
             time.sleep(PROC_VALIDATOR_SLEEP)
 
 
-@func_set_timeout(VALIDATE_TIMEOUT * 2)
+@retry(tries=3)
 def validate_once(proxy):
     """
     进行一次验证，如果验证成功则返回True，否则返回False或者是异常
     """
-    proxies = {
-        'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-        'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-    }
+
     target = random.choice(VALIDATE_TARGETS)
-    r = requests.get(target["url"], timeout=VALIDATE_TIMEOUT, proxies=proxies)
+    r = requests.get(
+        url=target["url"],
+        timeout=VALIDATE_TIMEOUT,
+        proxies={
+            'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+            'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+        }
+    )
     return r.status_code in target["codes"]
 
 
