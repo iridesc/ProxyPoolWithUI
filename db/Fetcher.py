@@ -2,6 +2,7 @@
 
 import datetime
 
+
 class Fetcher(object):
     """
     爬取器的状态储存在数据库中，包括是否启用爬取器，爬取到的代理数量等
@@ -25,7 +26,7 @@ class Fetcher(object):
         self.sum_proxies_cnt = 0
         self.last_proxies_cnt = 0
         self.last_fetch_date = None
-    
+
     def params(self):
         """
         返回一个元组，包含自身的全部属性
@@ -34,7 +35,7 @@ class Fetcher(object):
             self.name, self.enable,
             self.sum_proxies_cnt, self.last_proxies_cnt, self.last_fetch_date
         )
-    
+
     def to_dict(self):
         """
         返回一个dict，包含自身的全部属性
@@ -46,7 +47,7 @@ class Fetcher(object):
             'last_proxies_cnt': self.last_proxies_cnt,
             'last_fetch_date': str(self.last_fetch_date) if self.last_fetch_date is not None else None
         }
-    
+
     @staticmethod
     def decode(row):
         """

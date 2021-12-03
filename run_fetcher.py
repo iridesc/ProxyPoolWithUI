@@ -3,7 +3,6 @@
 定时运行爬取器
 """
 
-import sys
 import threading
 from queue import Queue
 import time
@@ -11,6 +10,7 @@ from db import conn
 from fetchers import fetchers
 from config import PROC_FETCHER_SLEEP
 from loger import log
+
 
 def main():
     """
@@ -27,6 +27,7 @@ def main():
     while True:
         log('开始运行一轮爬取器')
         status = conn.getProxiesStatus()
+    
         if status['pending_proxies_cnt'] > 2000:
             log(f"还有{status['pending_proxies_cnt']}个代理等待验证，数量过多，跳过本次爬取")
             time.sleep(PROC_FETCHER_SLEEP)
@@ -45,25 +46,31 @@ def main():
             except Exception as e:
                 log(f'运行爬取器{name}出错：' + str(e), 1)
                 que.put((name, []))
+
         threads = []
         que = Queue()
         for item in fetchers:
-            data = conn.getFetcher(item.name)
-            if data is None:
-                log(f'没有在数据库中找到对应的信息：{item.name}', 1)
-                raise ValueError('不可恢复错误')
-            if not data.enable:
-                log(f'跳过爬取器{item.name}', 1)
+            fetcher_obj = conn.getFetcher(item.name)
+            if not fetcher_obj.enable:
+                log(f'跳过爬取器{item.name}', 2)
                 continue
-            threads.append(threading.Thread(target=run_thread, args=(item.name, item.fetcher, que)))
-        [t.start() for t in threads]
+            thread = threading.Thread(target=run_thread, args=(item.name, item.fetcher, que))
+            thread.start()
+            threads.append(thread)
+
         [t.join() for t in threads]
         for _ in range(len(threads)):
             assert not que.empty()
             fetcher_name, proxies = que.get()
+
             for proxy in proxies:
+                print(proxy)
                 conn.pushNewFetch(fetcher_name, proxy[0], proxy[1], proxy[2])
             conn.pushFetcherResult(fetcher_name, len(proxies))
-        
+
         log(f'完成运行{len(threads)}个爬取器，睡眠{PROC_FETCHER_SLEEP}秒', 1)
         time.sleep(PROC_FETCHER_SLEEP)
+
+
+if __name__ == '__main__':
+    main()

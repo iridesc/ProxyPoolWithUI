@@ -3,15 +3,20 @@
 """
 封装的数据库接口
 """
-
+import os
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
+django.setup()
+from proxy_api.models import Fetcher, Proxy
 from config import DATABASE_PATH
-from .Proxy import Proxy
-from .Fetcher import Fetcher
+
+
 import sqlite3
 import datetime
 import time
 
 conn = sqlite3.connect(DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
+
 
 def pushNewFetch(fetcher_name, protocol, ip, port):
     """
@@ -21,28 +26,14 @@ def pushNewFetch(fetcher_name, protocol, ip, port):
     ip : 代理IP地址
     port : 代理端口
     """
-    time.sleep(0.1) # 为了解决并发读写饿死的问题
+    if not Proxy.objects.filter(protocol=protocol, ip=ip, port=port).exists():
+        proxy = Proxy()
+        proxy.fetcher = Fetcher.objects.get(fetcher_name)
+        proxy.protocol = protocol
+        proxy.ip = ip
+        proxy.port = port
+        proxy.save()
 
-    p = Proxy()
-    p.fetcher_name = fetcher_name
-    p.protocol = protocol
-    p.ip = ip
-    p.port = port
-
-    c = conn.cursor()
-    c.execute('BEGIN EXCLUSIVE TRANSACTION;')
-    # 更新proxies表
-    c.execute('SELECT * FROM proxies WHERE protocol=? AND ip=? AND port=?', (p.protocol, p.ip, p.port))
-    row = c.fetchone()
-    if row is not None: # 已经存在(protocol, ip, port)
-        old_p = Proxy.decode(row)
-        c.execute("""
-            UPDATE proxies SET fetcher_name=?,to_validate_date=? WHERE protocol=? AND ip=? AND port=?
-        """, (p.fetcher_name, min(datetime.datetime.now(), old_p.to_validate_date), p.protocol, p.ip, p.port))
-    else:
-        c.execute('INSERT INTO proxies VALUES (?,?,?,?,?,?,?,?,?)', p.params())
-    c.close()
-    conn.commit()
 
 def getToValidate(max_count=1):
     """
@@ -69,6 +60,7 @@ def getToValidate(max_count=1):
     conn.commit()
     return proxies
 
+
 def pushValidateResult(proxy, success, latency):
     """
     将验证器的一个结果添加进数据库中
@@ -76,7 +68,7 @@ def pushValidateResult(proxy, success, latency):
     success : True/False，验证是否成功
     latency : 本次验证所用的时间(单位毫秒)
     """
-    time.sleep(0.01) # 为了解决并发读写饿死的问题
+    time.sleep(0.01)  # 为了解决并发读写饿死的问题
 
     p = proxy
     should_remove = p.validate(success, latency)
@@ -93,6 +85,7 @@ def pushValidateResult(proxy, success, latency):
         ))
     conn.commit()
 
+
 def getValidatedRandom(max_count):
     """
     从通过了验证的代理中，随机选择max_count个代理返回
@@ -107,30 +100,19 @@ def getValidatedRandom(max_count):
     r.close()
     return proxies
 
+
 def pushFetcherResult(name, proxies_cnt):
     """
     更新爬取器的状态，每次在完成一个网站的爬取之后，调用本函数
     name : 爬取器的名称
     proxies_cnt : 本次爬取到的代理数量
     """
-    time.sleep(0.1) # 为了解决并发读写饿死的问题
+    fetcher = Fetcher.objects.get(name=name)
+    fetcher.last_proxies_cnt = proxies_cnt
+    fetcher.sum_proxies_cnt = fetcher.sum_proxies_cnt + proxies_cnt
+    fetcher.last_fetch_date = time.time()
+    fetcher.save()
 
-    c = conn.cursor()
-    c.execute('BEGIN EXCLUSIVE TRANSACTION;')
-    c.execute('SELECT * FROM fetchers WHERE name=?', (name,))
-    row = c.fetchone()
-    if row is None:
-        raise ValueError(f'ERRROR: can not find fetcher {name}')
-    else:
-        f = Fetcher.decode(row)
-        f.last_proxies_cnt = proxies_cnt
-        f.sum_proxies_cnt = f.sum_proxies_cnt + proxies_cnt
-        f.last_fetch_date = datetime.datetime.now()
-        c.execute('UPDATE fetchers SET sum_proxies_cnt=?,last_proxies_cnt=?,last_fetch_date=? WHERE name=?', (
-            f.sum_proxies_cnt, f.last_proxies_cnt, f.last_fetch_date, f.name
-        ))
-    c.close()
-    conn.commit()
 
 def pushFetcherEnable(name, enable):
     """
@@ -153,6 +135,7 @@ def pushFetcherEnable(name, enable):
     c.close()
     conn.commit()
 
+
 def getAllFetchers():
     """
     获取所有的爬取器以及状态
@@ -163,18 +146,17 @@ def getAllFetchers():
     r.close()
     return fetchers
 
+
 def getFetcher(name):
     """
     获取指定爬取器以及状态
     返回 : Fetcher
     """
-    r = conn.execute('SELECT * FROM fetchers WHERE name=?', (name,))
-    row = r.fetchone()
-    r.close()
-    if row is None:
-        return None
-    else:
-        return Fetcher.decode(row)
+    # r = conn.execute('SELECT * FROM fetchers WHERE name=?', (name,))
+    # row = r.fetchone()
+    # r.close()
+    return Fetcher.objects.get(name=name)
+
 
 def getProxyCount(fetcher_name):
     """
@@ -187,28 +169,37 @@ def getProxyCount(fetcher_name):
     r.close()
     return cnt
 
+
 def getProxiesStatus():
     """
     获取代理状态，包括`全部代理数量`，`当前可用代理数量`，`等待验证代理数量`
     返回 : dict
     """
-    r = conn.execute('SELECT count(*) FROM proxies')
-    sum_proxies_cnt = r.fetchone()[0]
-    r.close()
+    # r = conn.execute('SELECT count(*) FROM proxies')
+    # sum_proxies_cnt = r.fetchone()[0]
+    # r.close()
 
-    r = conn.execute('SELECT count(*) FROM proxies WHERE validated=?', (True,))
-    validated_proxies_cnt = r.fetchone()[0]
-    r.close()
+    all_query_set = Proxy.objects.all()
+    sum_proxies_cnt = all_query_set.count()
 
-    r = conn.execute('SELECT count(*) FROM proxies WHERE to_validate_date<=?', (datetime.datetime.now(),))
-    pending_proxies_cnt = r.fetchone()[0]
-    r.close()
+    # r = conn.execute('SELECT count(*) FROM proxies WHERE validated=?', (True,))
+    # validated_proxies_cnt = r.fetchone()[0]
+    # r.close()
+
+    validated_proxies_cnt = Proxy.objects.filter(validated=False).count()
+
+    # r = conn.execute('SELECT count(*) FROM proxies WHERE to_validate_date<=?', (datetime.datetime.now(),))
+    # pending_proxies_cnt = r.fetchone()[0]
+    # r.close()
+
+    pending_proxies_cnt = Proxy.objects.filter(to_validate_time__lt=time.time()).count()
 
     return dict(
         sum_proxies_cnt=sum_proxies_cnt,
         validated_proxies_cnt=validated_proxies_cnt,
         pending_proxies_cnt=pending_proxies_cnt
     )
+
 
 def pushClearFetchersStatus():
     """

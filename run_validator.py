@@ -115,3 +115,7 @@ def validate_thread(in_que, out_que):
             latency = None
 
         out_que.put((proxy, success, latency))
+
+
+if __name__ == '__main__':
+    main()
