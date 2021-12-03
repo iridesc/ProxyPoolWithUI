@@ -6,13 +6,11 @@
 import sys
 import threading
 from queue import Queue
-import logging
 import time
 from db import conn
 from fetchers import fetchers
 from config import PROC_FETCHER_SLEEP
-
-logging.basicConfig(stream=sys.stdout, format="%(asctime)s-%(levelname)s:%(name)s:%(message)s", level='INFO')
+from loger import log
 
 def main():
     """
@@ -26,12 +24,11 @@ def main():
         将爬取到的代理放入数据库中
         睡眠一段时间
     """
-    logger = logging.getLogger('fetcher')
     while True:
-        logger.info('开始运行一轮爬取器')
+        log('开始运行一轮爬取器')
         status = conn.getProxiesStatus()
         if status['pending_proxies_cnt'] > 2000:
-            logger.info(f"还有{status['pending_proxies_cnt']}个代理等待验证，数量过多，跳过本次爬取")
+            log(f"还有{status['pending_proxies_cnt']}个代理等待验证，数量过多，跳过本次爬取")
             time.sleep(PROC_FETCHER_SLEEP)
             continue
 
@@ -46,17 +43,17 @@ def main():
                 proxies = f.fetch()
                 que.put((name, proxies))
             except Exception as e:
-                logger.error(f'运行爬取器{name}出错：' + str(e))
+                log(f'运行爬取器{name}出错：' + str(e), 1)
                 que.put((name, []))
         threads = []
         que = Queue()
         for item in fetchers:
             data = conn.getFetcher(item.name)
             if data is None:
-                logger.error(f'没有在数据库中找到对应的信息：{item.name}')
+                log(f'没有在数据库中找到对应的信息：{item.name}', 1)
                 raise ValueError('不可恢复错误')
             if not data.enable:
-                logger.info(f'跳过爬取器{item.name}')
+                log(f'跳过爬取器{item.name}', 1)
                 continue
             threads.append(threading.Thread(target=run_thread, args=(item.name, item.fetcher, que)))
         [t.start() for t in threads]
@@ -68,5 +65,5 @@ def main():
                 conn.pushNewFetch(fetcher_name, proxy[0], proxy[1], proxy[2])
             conn.pushFetcherResult(fetcher_name, len(proxies))
         
-        logger.info(f'完成运行{len(threads)}个爬取器，睡眠{PROC_FETCHER_SLEEP}秒')
+        log(f'完成运行{len(threads)}个爬取器，睡眠{PROC_FETCHER_SLEEP}秒', 1)
         time.sleep(PROC_FETCHER_SLEEP)

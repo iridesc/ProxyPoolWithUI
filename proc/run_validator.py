@@ -3,21 +3,17 @@
 验证器逻辑
 """
 
-import sys
 import random
 import threading
 from queue import Queue
-import logging
+from loger import log
+from retry import retry
+from func_timeout import func_set_timeout
 import time
 import requests
-from func_timeout import func_set_timeout
-from func_timeout.exceptions import FunctionTimedOut
-from retry import retry
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS
-
-logging.basicConfig(stream=sys.stdout, format="%(asctime)s-%(levelname)s:%(name)s:%(message)s", level='INFO')
 
 
 def main():
@@ -30,7 +26,6 @@ def main():
         从数据库中获取若干当前待验证的代理
         将代理发送给前面创建的线程
     """
-    logger = logging.getLogger('validator')
 
     in_que = Queue()
     out_que = Queue()
@@ -38,8 +33,9 @@ def main():
 
     threads = []
     for _ in range(VALIDATE_THREAD_NUM):
-        threads.append(threading.Thread(target=validate_thread, args=(in_que, out_que)))
-    [_.start() for _ in threads]
+        thread = threading.Thread(target=validate_thread, args=(in_que, out_que))
+        threads.append(thread)
+        thread.start()
 
     while True:
         out_cnt = 0
@@ -51,7 +47,7 @@ def main():
             running_proxies.remove(uri)
             out_cnt = out_cnt + 1
         if out_cnt > 0:
-            logger.info(f'完成了{out_cnt}个代理的验证')
+            log(f"验证完成：{out_cnt}")
 
         # 如果正在进行验证的代理足够多，那么就不着急添加新代理
         if len(running_proxies) >= VALIDATE_THREAD_NUM:
@@ -72,13 +68,18 @@ def main():
             time.sleep(PROC_VALIDATOR_SLEEP)
 
 
-@retry(tries=3)
+@func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*2)
+@retry(tries=VALIDATE_MAX_FAILS)
 def validate_once(proxy):
-    """
-    进行一次验证，如果验证成功则返回True，否则返回False或者是异常
+    """[随机选择一个验证目标验证一次代理]
+
+    Returns:
+        [bool]: [代理是否可用]
+        [float]: [可用则返回延时， 否则返回None]
     """
 
     target = random.choice(VALIDATE_TARGETS)
+    start_time = time.time()
     r = requests.get(
         url=target["url"],
         timeout=VALIDATE_TIMEOUT,
@@ -87,7 +88,9 @@ def validate_once(proxy):
             'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
         }
     )
-    return r.status_code in target["codes"]
+    r.raise_for_status()
+    success = r.status_code in target["codes"]
+    return success, int((time.time() - start_time)*1000) if success else None
 
 
 def validate_thread(in_que, out_que):
@@ -100,20 +103,11 @@ def validate_thread(in_que, out_que):
 
     while True:
         proxy = in_que.get()
-
-        success = False
-        latency = None
-        for _ in range(VALIDATE_MAX_FAILS):
-            try:
-                start_time = time.time()
-                if validate_once(proxy):
-                    end_time = time.time()
-                    latency = int((end_time-start_time)*1000)
-                    success = True
-                    break
-            except Exception as e:
-                pass
-            except FunctionTimedOut:
-                pass
+        # 尝试验证代理 返回可用状态与 异常则返回不可用状态
+        try:
+            success, latency = validate_once(proxy)
+        except Exception:
+            success = False
+            latency = None
 
         out_que.put((proxy, success, latency))

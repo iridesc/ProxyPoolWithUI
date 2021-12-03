@@ -14,10 +14,18 @@ DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data.db')
 PROC_FETCHER_SLEEP = 5 * 60
 
 # 验证器每次睡眠的时间，单位秒
-PROC_VALIDATOR_SLEEP = 5
+PROC_VALIDATOR_SLEEP = 10
 
-# 验证器的配置参数
-VALIDATE_THREAD_NUM = 80  # 验证线程数量
+# 验证线程数量
+VALIDATE_THREAD_NUM = 100
+
+# 超时时间，单位s
+VALIDATE_TIMEOUT = 2
+
+# 验证允许失败次数
+VALIDATE_MAX_FAILS = 3
+
+# 验证器 验证目标
 VALIDATE_TARGETS = [
     {
         "url": "http://detectportal.firefox.com/success.txt",
@@ -48,5 +56,4 @@ VALIDATE_TARGETS = [
         "codes": [204, 200],
     }
 ]
-VALIDATE_TIMEOUT = 2  # 超时时间，单位s
-VALIDATE_MAX_FAILS = 3
+
