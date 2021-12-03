@@ -89,8 +89,12 @@ def validate_once(proxy):
         }
     )
     r.raise_for_status()
-    success = r.status_code in target["codes"]
-    return success, int((time.time() - start_time)*1000) if success else None
+    
+    # 延时 加 传输耗时 对评估代理可用性更有价值
+    time_cost = int((time.time() - start_time)*1000)
+    # 可用 = 整体耗时 < 预设耗时 and 状态码正常
+    success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
+    return success, time_cost if success else None
 
 
 def validate_thread(in_que, out_que):
