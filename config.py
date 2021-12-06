@@ -6,6 +6,20 @@
 """
 
 import os
+from fetchers import IP66Fetcher
+from fetchers.GoubanjiaFetcher import GoubanjiaFetcher
+from fetchers.IHuanFetcher import IHuanFetcher
+from fetchers.IP3366Fetcher import IP3366Fetcher
+from fetchers.IP89Fetcher import IP89Fetcher
+from fetchers.JiangxianliFetcher import JiangxianliFetcher
+from fetchers.KaiXinFetcher import KaiXinFetcher
+from fetchers.KuaidailiFetcher import KuaidailiFetcher
+from fetchers.ProxyListFetcher import ProxyListFetcher
+from fetchers.ProxyScrapeFetcher import ProxyScrapeFetcher
+from fetchers.ProxyscanFetcher import ProxyscanFetcher
+from fetchers.UUFetcher import UUFetcher
+from fetchers.XiaoShuFetcher import XiaoShuFetcher
+from fetchers.XiLaFetcher import XiLaFetcher
 
 # 数据库文件路径
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data.db')
@@ -57,3 +71,20 @@ VALIDATE_TARGETS = [
     }
 ]
 
+
+FETCHER_MAP = {
+    "www.xsdaili.cn": XiaoShuFetcher,
+    "www.xiladaili.com": XiLaFetcher,
+    "www.proxyscan.io": ProxyscanFetcher,
+    "www.proxy-list.download": ProxyListFetcher,
+    "www.kxdaili.com": KaiXinFetcher,
+    "www.kuaidaili.com": KuaidailiFetcher,
+    "www.ip3366.net": IP3366Fetcher,
+    "www.goubanjia.com": GoubanjiaFetcher,
+    "www.89ip.cn": IP89Fetcher,
+    "www.66ip.cn": IP66Fetcher,
+    "uu-proxy.com": UUFetcher,
+    "proxyscrape.com": ProxyScrapeFetcher,
+    "ip.jiangxianli.com": JiangxianliFetcher,
+    "ip.ihuan.me": IHuanFetcher,
+}

@@ -3,12 +3,14 @@
 """
 封装的数据库接口
 """
-import time
-from proxy_api.models import Fetcher, Proxy
 import os
 import django
+import time
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
+from proxy_api.models import Fetcher, Proxy
+
+
 
 
 
@@ -131,10 +133,8 @@ def getAllFetchers():
     获取所有的爬取器以及状态
     返回 : list[Fetcher]
     """
-    r = conn.execute('SELECT * FROM fetchers')
-    fetchers = [Fetcher.decode(row) for row in r]
-    r.close()
-    return fetchers
+
+    return Fetcher.objects.all()
 
 
 def getFetcher(name):

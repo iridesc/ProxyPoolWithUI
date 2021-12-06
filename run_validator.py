@@ -111,8 +111,7 @@ def validate_thread(in_que, out_que):
         # 尝试验证代理 返回可用状态与 异常则返回不可用状态
         try:
             success, latency = validate_once(proxy)
-        except Exception as e:
-            print(e)
+        except Exception:
             success = False
             latency = 9999
 

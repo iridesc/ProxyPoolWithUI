@@ -7,10 +7,23 @@ import threading
 from queue import Queue
 import time
 from db import conn
-from fetchers import fetchers
 from config import PROC_FETCHER_SLEEP
 from loger import log
+from config import FETCHER_MAP
 
+def run_thread(name, fetcher, que):
+    """
+    name: 爬取器名称
+    fetcher: 爬取器class
+    que: 队列，用于返回数据
+    """
+    try:
+        f = fetcher()
+        proxies = f.fetch()
+        que.put((name, proxies))
+    except Exception as e:
+        log(f'运行爬取器{name}出错：' + str(e), 1)
+        que.put((name, []))
 
 def main():
     """
@@ -33,30 +46,16 @@ def main():
             time.sleep(PROC_FETCHER_SLEEP)
             continue
 
-        def run_thread(name, fetcher, que):
-            """
-            name: 爬取器名称
-            fetcher: 爬取器class
-            que: 队列，用于返回数据
-            """
-            try:
-                f = fetcher()
-                proxies = f.fetch()
-                que.put((name, proxies))
-            except Exception as e:
-                log(f'运行爬取器{name}出错：' + str(e), 1)
-                que.put((name, []))
+
 
         threads = []
         que = Queue()
-        for item in fetchers:
-            fetcher_obj = conn.getFetcher(item.name)
-            if not fetcher_obj.enable:
-                log(f'跳过爬取器{item.name}', 2)
-                continue
-            thread = threading.Thread(target=run_thread, args=(item.name, item.fetcher, que))
-            thread.start()
-            threads.append(thread)
+        for fetcher_obj in conn.getAllFetchers():
+            if fetcher_obj.enable:
+                thread = threading.Thread(target=run_thread, args=(
+                    fetcher_obj.name, FETCHER_MAP[fetcher_obj.name], que))
+                thread.start()
+                threads.append(thread)
 
         [t.join() for t in threads]
         for _ in range(len(threads)):
@@ -64,8 +63,10 @@ def main():
             fetcher_name, proxies = que.get()
 
             for proxy in proxies:
-                print(fetcher_name, proxy,)
-                conn.pushNewFetch(fetcher_name, *proxy)
+                try:
+                    conn.pushNewFetch(fetcher_name, *proxy)
+                except:
+                    log(f"pushNewFetch 异常:{fetcher_name} {proxy}", 2)
             conn.pushFetcherResult(fetcher_name, len(proxies))
 
         log(f'完成运行{len(threads)}个爬取器，睡眠{PROC_FETCHER_SLEEP}秒', 1)

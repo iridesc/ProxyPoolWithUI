@@ -6,7 +6,7 @@ import time
 import sys
 import os
 sys.path.append(os.path.dirname(__file__) + os.sep + '../')
-
+from loger import log
 
 class Item:
     def __init__(self, target, name):
@@ -28,17 +28,17 @@ def main():
             if p.process is None:
                 p.process = Process(target=p.target, name=p.name, daemon=False)
                 p.process.start()
-                print(f'启动{p.name}进程，pid={p.process.pid}')
+                log(f'启动{p.name}进程，pid={p.process.pid}')
                 p.start_time = time.time()
 
         for p in processes:
             if p.process is not None:
                 if not p.process.is_alive():
-                    print(f'进程{p.name}异常退出, exitcode={p.process.exitcode}')
+                    log(f'进程{p.name}异常退出, exitcode={p.process.exitcode}')
                     p.process.terminate()
                     p.process = None
                 elif p.start_time + 60 * 60 < time.time():  # 最长运行1小时就重启
-                    print(f'进程{p.name}运行太久，重启')
+                    log(f'进程{p.name}运行太久，重启', 2)
                     p.process.terminate()
                     p.process = None
 
@@ -50,6 +50,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        print('========FATAL ERROR=========')
-        print(e)
+        log('========FATAL ERROR=========', 1)
+        log(e)
         sys.exit(1)
