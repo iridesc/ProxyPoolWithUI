@@ -1,6 +1,9 @@
+import json
+import random
 from django.shortcuts import render
+from django.forms.models import model_to_dict
 from proxy_api.models import Fetcher, Proxy
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 # Create your views here.
 
 
@@ -33,8 +36,26 @@ def home(request):
 
 
 def api(request):
+    ret_data = {
+        "suc": False,
+        "msg":"None",
+    }
     if request.method == "POST":
-        print()
-
-
-    return render()
+        try:
+            req_data = json.loads(request.body.decode())
+        except Exception as e:
+  
+            ret_data["msg"] = "JSONDecodeError"
+        else:
+            reason = req_data.get("reason")
+            if reason is None:
+                ret_data["msg"] = "ReasonIsRequired"
+            elif reason == "GetOneRandomProxy":
+                query_set = Proxy.objects.filter(validated = True)
+                amount = query_set.count()
+                random_index = random.randint(0, amount-1 if amount else amount) 
+                ret_data["proxy"] = model_to_dict(query_set[random_index]) if amount else None
+                ret_data["suc"] = True
+            else:
+                ret_data["msg"] = "UnknownReason"
+    return JsonResponse(ret_data)
