@@ -55,7 +55,7 @@ ROOT_URLCONF = 'ProxyPool.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["frontend/deployment/"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

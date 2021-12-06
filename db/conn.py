@@ -3,19 +3,14 @@
 """
 封装的数据库接口
 """
+import time
+from proxy_api.models import Fetcher, Proxy
 import os
 import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
-from proxy_api.models import Fetcher, Proxy
-from config import DATABASE_PATH
 
 
-import sqlite3
-import datetime
-import time
-
-conn = sqlite3.connect(DATABASE_PATH, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
 
 
 def pushNewFetch(fetcher_name, protocol, ip, port):
@@ -28,7 +23,7 @@ def pushNewFetch(fetcher_name, protocol, ip, port):
     """
     if not Proxy.objects.filter(protocol=protocol, ip=ip, port=port).exists():
         proxy = Proxy()
-        proxy.fetcher = Fetcher.objects.get(fetcher_name)
+        proxy.fetcher = Fetcher.objects.get(name=fetcher_name)
         proxy.protocol = protocol
         proxy.ip = ip
         proxy.port = port
@@ -42,22 +37,8 @@ def getToValidate(max_count=1):
     max_count : 返回数量限制
     返回 : list[Proxy]
     """
-    c = conn.cursor()
-    c.execute('BEGIN EXCLUSIVE TRANSACTION;')
-    c.execute('SELECT * FROM proxies WHERE to_validate_date<=? AND validated=? ORDER BY to_validate_date LIMIT ?', (
-        datetime.datetime.now(),
-        True,
-        max_count
-    ))
-    proxies = [Proxy.decode(row) for row in c]
-    c.execute('SELECT * FROM proxies WHERE to_validate_date<=? AND validated=? ORDER BY to_validate_date LIMIT ?', (
-        datetime.datetime.now(),
-        False,
-        max_count - len(proxies)
-    ))
-    proxies = proxies + [Proxy.decode(row) for row in c]
-    c.close()
-    conn.commit()
+    proxies = Proxy.objects.filter(
+        to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")[:max_count]
     return proxies
 
 
@@ -68,22 +49,31 @@ def pushValidateResult(proxy, success, latency):
     success : True/False，验证是否成功
     latency : 本次验证所用的时间(单位毫秒)
     """
-    time.sleep(0.01)  # 为了解决并发读写饿死的问题
 
-    p = proxy
-    should_remove = p.validate(success, latency)
+    def validate(self, success, latency):
+        """
+        传入一次验证结果，根据验证结果调整自身属性，并返回是否删除这个代理
+        success : True/False，表示本次验证是否成功
+        返回 : True/False，True表示这个代理太差了，应该从数据库中删除
+        """
+
+        self.validate_failed_count += 0 if success else 1
+        if self.validate_failed_count > 3:
+            return True
+
+        self.latency = latency
+        self.validate_time = time.time()
+        # 10分钟之后继续验证
+        self.to_validate_time = time.time() + 60*10 if success else time.time() + self.validate_failed_count * 60*10
+        self.validated = success
+
+        return False
+
+    should_remove = validate(proxy, success, latency)
     if should_remove:
-        conn.execute('DELETE FROM proxies WHERE protocol=? AND ip=? AND port=?', (p.protocol, p.ip, p.port))
+        proxy.delete()
     else:
-        conn.execute("""
-            UPDATE proxies
-            SET fetcher_name=?,validated=?,latency=?,validate_date=?,to_validate_date=?,validate_failed_cnt=?
-            WHERE protocol=? AND ip=? AND port=?
-        """, (
-            p.fetcher_name, p.validated, p.latency, p.validate_date, p.to_validate_date, p.validate_failed_cnt,
-            p.protocol, p.ip, p.port
-        ))
-    conn.commit()
+        proxy.save()
 
 
 def getValidatedRandom(max_count):
@@ -101,15 +91,15 @@ def getValidatedRandom(max_count):
     return proxies
 
 
-def pushFetcherResult(name, proxies_cnt):
+def pushFetcherResult(name, proxies_amount):
     """
     更新爬取器的状态，每次在完成一个网站的爬取之后，调用本函数
     name : 爬取器的名称
     proxies_cnt : 本次爬取到的代理数量
     """
     fetcher = Fetcher.objects.get(name=name)
-    fetcher.last_proxies_cnt = proxies_cnt
-    fetcher.sum_proxies_cnt = fetcher.sum_proxies_cnt + proxies_cnt
+    fetcher.last_proxies_amount = proxies_amount
+    fetcher.sum_proxies_amount = fetcher.sum_proxies_amount + proxies_amount
     fetcher.last_fetch_date = time.time()
     fetcher.save()
 

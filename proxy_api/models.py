@@ -28,4 +28,5 @@ class Proxy(models.Model):
     latency = models.FloatField(default=0)
     validate_time = models.FloatField(default=0)
     to_validate_time = models.FloatField(default=0)
-    validate_failed_cnt = 0
+    validate_failed_count = 0
+

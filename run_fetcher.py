@@ -64,8 +64,8 @@ def main():
             fetcher_name, proxies = que.get()
 
             for proxy in proxies:
-                print(proxy)
-                conn.pushNewFetch(fetcher_name, proxy[0], proxy[1], proxy[2])
+                print(fetcher_name, proxy,)
+                conn.pushNewFetch(fetcher_name, *proxy)
             conn.pushFetcherResult(fetcher_name, len(proxies))
 
         log(f'完成运行{len(threads)}个爬取器，睡眠{PROC_FETCHER_SLEEP}秒', 1)

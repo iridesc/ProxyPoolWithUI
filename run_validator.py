@@ -11,6 +11,7 @@ from retry import retry
 from func_timeout import func_set_timeout
 import time
 import requests
+from requests.exceptions import ReadTimeout
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS
@@ -94,7 +95,7 @@ def validate_once(proxy):
     time_cost = time.time() - start_time
     # 可用 = 整体耗时 < 预设耗时 and 状态码正常
     success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
-    return success, int(time_cost*1000) if success else None
+    return success, int(time_cost*1000) if success else 9999
 
 
 def validate_thread(in_que, out_que):
@@ -110,9 +111,10 @@ def validate_thread(in_que, out_que):
         # 尝试验证代理 返回可用状态与 异常则返回不可用状态
         try:
             success, latency = validate_once(proxy)
-        except Exception:
+        except Exception as e:
+            print(e)
             success = False
-            latency = None
+            latency = 9999
 
         out_que.put((proxy, success, latency))
 

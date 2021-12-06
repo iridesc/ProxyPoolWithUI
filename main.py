@@ -1,10 +1,11 @@
+import run_validator
+import run_fetcher
+import manage
 from multiprocessing import Process
 import time
 import sys
 import os
 sys.path.append(os.path.dirname(__file__) + os.sep + '../')
-from proc import run_fetcher, run_validator
-from api import api
 
 
 class Item:
@@ -16,10 +17,11 @@ class Item:
 
 
 def main():
-    processes = []
-    processes.append(Item(target=run_fetcher.main, name='fetcher'))
-    processes.append(Item(target=run_validator.main, name='validator'))
-    processes.append(Item(target=api.main, name='api'))
+    processes = [
+        Item(target=run_fetcher.main, name='fetcher'),
+        Item(target=run_validator.main, name='validator'),
+        # Item(target=manage.run, name='api'),
+    ]
 
     while True:
         for p in processes:
@@ -43,37 +45,10 @@ def main():
         time.sleep(0.2)
 
 
-def citest():
-    """
-    此函数仅用于检查程序是否可运行，一般情况下使用本项目可忽略
-    """
-    processes = []
-    processes.append(Item(target=run_fetcher.main, name='fetcher'))
-    processes.append(Item(target=run_validator.main, name='validator'))
-    processes.append(Item(target=api.main, name='api'))
-
-    for p in processes:
-        assert p.process is None
-        p.process = Process(target=p.target, name=p.name, daemon=False)
-        p.process.start()
-        print(f'running {p.name}, pid={p.process.pid}')
-        p.start_time = time.time()
-
-    time.sleep(10)
-
-    for p in processes:
-        assert p.process is not None
-        assert p.process.is_alive()
-        p.process.terminate()
-
 
 if __name__ == '__main__':
     try:
-        if len(sys.argv) >= 2 and sys.argv[1] == 'citest':
-            citest()
-        else:
-            main()
-        sys.exit(0)
+        main()
     except Exception as e:
         print('========FATAL ERROR=========')
         print(e)
