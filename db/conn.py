@@ -3,6 +3,7 @@
 """
 封装的数据库接口
 """
+from loger import log
 import os
 import django
 import time
@@ -44,7 +45,7 @@ def getToValidate(max_count=1):
     return proxies
 
 
-def pushValidateResult(proxy, success, latency):
+def pushValidateResult(proxy, success_cn, latency_cn, success_oversea, latency_oversea):
     """
     将验证器的一个结果添加进数据库中
     proxy : 代理
@@ -52,26 +53,28 @@ def pushValidateResult(proxy, success, latency):
     latency : 本次验证所用的时间(单位毫秒)
     """
 
-    def validate(self, success, latency):
+    def validate(proxy, success_cn, latency_cn, success_oversea, latency_oversea):
         """
         传入一次验证结果，根据验证结果调整自身属性，并返回是否删除这个代理
         success : True/False，表示本次验证是否成功
         返回 : True/False，True表示这个代理太差了，应该从数据库中删除
         """
+        proxy.validated = success_cn or success_oversea
 
-        self.validate_failed_count += 0 if success else 1
-        if self.validate_failed_count > 3:
+        proxy.validate_failed_count += 0 if proxy.validated else 1
+        if proxy.validate_failed_count > 20:
             return True
 
-        self.latency = latency
-        self.validate_time = time.time()
+        proxy.latency_cn = latency_cn
+        proxy.latency_oversea = latency_oversea
+        proxy.validate_time = time.time()
+        # log(f"{proxy} {proxy.validated} {proxy.latency_cn} {proxy.latency_oversea}")
         # 10分钟之后继续验证
-        self.to_validate_time = time.time() + 60*10 if success else time.time() + self.validate_failed_count * 60*10
-        self.validated = success
+        proxy.to_validate_time = time.time() + 60*10 if proxy.validated else time.time() + proxy.validate_failed_count * 60*10
 
         return False
 
-    should_remove = validate(proxy, success, latency)
+    should_remove = validate(proxy, success_cn, latency_cn, success_oversea, latency_oversea)
     if should_remove:
         proxy.delete()
     else:
@@ -101,8 +104,8 @@ def pushFetcherResult(name, proxies_amount):
     """
     fetcher = Fetcher.objects.get(name=name)
     fetcher.last_proxies_amount = proxies_amount
-    fetcher.sum_proxies_amount = fetcher.sum_proxies_amount + proxies_amount
-    fetcher.last_fetch_date = time.time()
+    fetcher.sum_proxies_amount = Proxy.objects.filter(fetcher = fetcher).count()
+    fetcher.last_fetch_time = time.time()
     fetcher.save()
 
 

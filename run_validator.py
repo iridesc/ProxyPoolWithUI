@@ -13,7 +13,7 @@ import time
 import requests
 from requests.exceptions import ReadTimeout
 from db import conn
-from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS
+from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS
 
 
@@ -41,8 +41,8 @@ def main():
     while True:
         out_cnt = 0
         while not out_que.empty():
-            proxy, success, latency = out_que.get()
-            conn.pushValidateResult(proxy, success, latency)
+            proxy, success_cn, latency_cn, success_oversea, latency_oversea = out_que.get()
+            conn.pushValidateResult(proxy, success_cn, latency_cn, success_oversea, latency_oversea)
             uri = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
             assert uri in running_proxies
             running_proxies.remove(uri)
@@ -69,9 +69,9 @@ def main():
             time.sleep(PROC_VALIDATOR_SLEEP)
 
 
-@func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*2)
+@func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*3)
 @retry(tries=VALIDATE_MAX_FAILS)
-def validate_once(proxy):
+def validate_once(proxy, targets):
     """[随机选择一个验证目标验证一次代理]
 
     Returns:
@@ -79,7 +79,7 @@ def validate_once(proxy):
         [float]: [可用则返回延时， 否则返回None]
     """
 
-    target = random.choice(VALIDATE_TARGETS)
+    target = random.choice(targets)
     start_time = time.time()
     r = requests.get(
         url=target["url"],
@@ -90,7 +90,7 @@ def validate_once(proxy):
         }
     )
     r.raise_for_status()
-    
+
     # 延时 加 传输耗时 对评估代理可用性更有价值
     time_cost = time.time() - start_time
     # 可用 = 整体耗时 < 预设耗时 and 状态码正常
@@ -110,12 +110,16 @@ def validate_thread(in_que, out_que):
         proxy = in_que.get()
         # 尝试验证代理 返回可用状态与 异常则返回不可用状态
         try:
-            success, latency = validate_once(proxy)
+            success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
         except Exception:
-            success = False
-            latency = 9999
+            success_cn, latency_cn= False, 9999
 
-        out_que.put((proxy, success, latency))
+        try:
+            success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
+        except Exception:
+            success_oversea, latency_oversea  = False, 9999
+
+        out_que.put((proxy, success_cn, latency_cn, success_oversea, latency_oversea,))
 
 
 if __name__ == '__main__':

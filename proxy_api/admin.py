@@ -14,7 +14,7 @@ class IpAssetPortAdmin(admin.ModelAdmin):
 
 @admin.register(Proxy)
 class IpAssetPortAdmin(admin.ModelAdmin):
-    list_display = ("fetcher", "protocol", "ip", "port", "validated", "latency", "validate_time", "to_validate_time", "validate_failed_count")
+    list_display = ("fetcher", "protocol", "ip", "port", "validated", "latency_cn", "validate_time", "to_validate_time", "validate_failed_count")
     # search_fields = ("ip_asset_port_id", "ip_asset__ip", "task__customer_name", "domain_title", "man_domain_title",
     #                  "task__task_id")
     # list_filter = ("active", "url_active", "is_web_service", "abnormal_web_status", "abnormal_web_type",

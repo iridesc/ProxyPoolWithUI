@@ -20,7 +20,7 @@ def main():
     processes = [
         Item(target=run_fetcher.main, name='fetcher'),
         Item(target=run_validator.main, name='validator'),
-        # Item(target=manage.run, name='api'),
+        Item(target=manage.run, name='api'),
     ]
 
     while True:

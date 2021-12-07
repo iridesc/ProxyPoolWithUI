@@ -4,6 +4,7 @@
 """
 
 import threading
+import traceback
 from queue import Queue
 import time
 from db import conn
@@ -23,6 +24,7 @@ def run_thread(name, fetcher, que):
         que.put((name, proxies))
     except Exception as e:
         log(f'运行爬取器{name}出错：' + str(e), 1)
+        traceback.print_exc()
         que.put((name, []))
 
 def main():
@@ -42,7 +44,7 @@ def main():
         status = conn.getProxiesStatus()
     
         if status['pending_proxies_cnt'] > 2000:
-            log(f"还有{status['pending_proxies_cnt']}个代理等待验证，数量过多，跳过本次爬取")
+            log(f"还有{status['pending_proxies_cnt']}个代理等待验证，数量过多，跳过本次爬取", 2)
             time.sleep(PROC_FETCHER_SLEEP)
             continue
 

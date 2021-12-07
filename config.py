@@ -34,43 +34,49 @@ PROC_VALIDATOR_SLEEP = 10
 VALIDATE_THREAD_NUM = 100
 
 # 超时时间，单位s
-VALIDATE_TIMEOUT = 2
+VALIDATE_TIMEOUT = 5
 
 # 验证允许失败次数
 VALIDATE_MAX_FAILS = 3
 
 # 验证器 验证目标
-VALIDATE_TARGETS = [
+VALIDATE_TARGETS_CN = [
     {
-        "url": "http://detectportal.firefox.com/success.txt",
-        "codes": [204, 200],
+        "url": "http://www.baidu.com",
+        "codes": [200],
     },
     {
-        "url": "http://connectivitycheck.platform.hicloud.com/generate_204",
-        "codes": [204, 200],
+        "url": "http://www.sogou.com",
+        "codes": [200],
     },
     {
-        "url": "http://connect.rom.miui.com/generate_204",
-        "codes": [204, 200],
+        "url": "http://weibo.com",
+        "codes": [200],
     },
     {
-        "url": "http://wifi.vivo.com.cn/generate_204",
-        "codes": [204, 200],
+        "url": "http://zhihu.com",
+        "codes": [200],
     },
-    {
-        "url": "http://www.msftconnecttest.com/connecttest.txt",
-        "codes": [204, 200],
-    },
-    {
-        "url": "http://www.apple.com/library/test/success.html",
-        "codes": [204, 200],
-    },
-    {
-        "url": "http://www.google-analytics.com/generate_204",
-        "codes": [204, 200],
-    }
 ]
 
+VALIDATE_TARGETS_OVERSEA = [
+    {
+        "url": "http://google.com",
+        "codes": [200],
+    },
+    {
+        "url": "http://duckduckgo.com",
+        "codes": [200],
+    },
+    {
+        "url": "http://facebook.com",
+        "codes": [200],
+    },
+    {
+        "url": "http://twitter.com",
+        "codes": [200],
+    },
+]
 
 FETCHER_MAP = {
     "www.xsdaili.cn": XiaoShuFetcher,

@@ -25,7 +25,9 @@ class Proxy(models.Model):
     ip = models.CharField(max_length=16)
     port = models.IntegerField()
     validated = models.BooleanField(default=False)
-    latency = models.FloatField(default=0)
+    latency_cn = models.FloatField(default=0)
+    latency_oversea = models.FloatField(default=0)
+
     validate_time = models.FloatField(default=0)
     to_validate_time = models.FloatField(default=0)
     validate_failed_count = 0
