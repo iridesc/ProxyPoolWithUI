@@ -2,8 +2,10 @@
 
 from .BaseFetcher import BaseFetcher
 import requests
+from requests.packages import urllib3
 from pyquery import PyQuery as pq
 import re
+urllib3.disable_warnings()
 
 class JiangxianliFetcher(BaseFetcher):
     """
@@ -36,7 +38,7 @@ class JiangxianliFetcher(BaseFetcher):
                 'Upgrade-Insecure-Requests': '1',
                 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/79.0.3945.130 Chrome/79.0.3945.130 Safari/537.36'
             }
-            html = requests.get(url, headers=headers, timeout=10).text
+            html = requests.get(url, headers=headers, timeout=10, verify=False).text
             doc = pq(html)
             for line in doc('tr').items():
                 tds = list(line('td').items())

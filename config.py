@@ -6,7 +6,7 @@
 """
 
 import os
-from fetchers import IP66Fetcher
+from fetchers.IP66Fetcher import IP66Fetcher
 from fetchers.GoubanjiaFetcher import GoubanjiaFetcher
 from fetchers.IHuanFetcher import IHuanFetcher
 from fetchers.IP3366Fetcher import IP3366Fetcher

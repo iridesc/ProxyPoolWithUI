@@ -5,6 +5,7 @@ import requests
 from pyquery import PyQuery as pq
 import re
 
+
 class IP66Fetcher(BaseFetcher):
     """
     http://www.66ip.cn/
@@ -51,3 +52,9 @@ class IP66Fetcher(BaseFetcher):
                         proxies.append(('http', ip, int(port)))
         
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = IP66Fetcher()
+    ps = f.fetch()
+    print(ps)
