@@ -48,8 +48,6 @@ def main():
             time.sleep(PROC_FETCHER_SLEEP)
             continue
 
-
-
         threads = []
         que = Queue()
         for fetcher_obj in conn.getAllFetchers():

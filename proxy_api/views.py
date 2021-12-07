@@ -1,4 +1,5 @@
 import json
+import time
 import random
 from django.shortcuts import render
 from django.forms.models import model_to_dict
@@ -16,12 +17,17 @@ def get_pool_status():
     cn_proxy_query_set = validated_proxy_query_set.filter(latency_cn__lt=VALIDATE_TIMEOUT*1000)
 
     ret_data["proxy_amount"] = all_proxy_query_set.count()
+    ret_data["need_validate_proxy_amount"] = Proxy.objects.filter(to_validate_time__lt=time.time()).count() 
+    ret_data["need_validate_proxy_ratio"] = round(ret_data["need_validate_proxy_amount"]/ret_data["proxy_amount"]*100, 2) if ret_data["proxy_amount"] else 0
     ret_data["validated_proxy_amount"] = validated_proxy_query_set.count()
-    ret_data["oversea_proxy_amount"] = oversea_proxy_query_set.count()
-    ret_data["cn_proxy_amount"] = cn_proxy_query_set.count()
     ret_data["validated_proxy_ratio"] = round(ret_data["validated_proxy_amount"]/ret_data["proxy_amount"]*100, 2) if ret_data["proxy_amount"] else 0
+
+    ret_data["oversea_proxy_amount"] = oversea_proxy_query_set.count()
     ret_data["oversea_proxy_ratio"] = round(ret_data["oversea_proxy_amount"]/ret_data["validated_proxy_amount"]*100, 2) if ret_data["validated_proxy_amount"] else 0
+
+    ret_data["cn_proxy_amount"] = cn_proxy_query_set.count()
     ret_data["cn_proxy_ratio"] = round(ret_data["cn_proxy_amount"]/ret_data["validated_proxy_amount"]*100, 2) if ret_data["validated_proxy_amount"] else 0
+
     return ret_data
 
 
