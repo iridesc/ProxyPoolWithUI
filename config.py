@@ -25,7 +25,7 @@ from fetchers.XiLaFetcher import XiLaFetcher
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data.db')
 
 # 每次运行所有爬取器之后，睡眠多少时间，单位秒
-PROC_FETCHER_SLEEP = 5 * 60
+PROC_FETCHER_SLEEP = 10 * 60
 
 # 验证器每次睡眠的时间，单位秒
 PROC_VALIDATOR_SLEEP = 10
@@ -37,7 +37,7 @@ VALIDATE_THREAD_NUM = 100
 VALIDATE_TIMEOUT = 5
 
 # 验证允许失败次数
-VALIDATE_MAX_FAILS = 3
+VALIDATE_MAX_FAILS = 2
 
 # 验证器 验证目标
 VALIDATE_TARGETS_CN = [
