@@ -10,6 +10,7 @@ import time
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
 from proxy_api.models import Fetcher, Proxy
+from config import VALIDATE_TIME_GAP
 
 
 
@@ -59,23 +60,24 @@ def pushValidateResult(proxy, success_cn, latency_cn, success_oversea, latency_o
         success : True/False，表示本次验证是否成功
         返回 : True/False，True表示这个代理太差了，应该从数据库中删除
         """
+        # 只要一个区域验证成功则认为成功
         proxy.validated = success_cn or success_oversea
-
-        proxy.validate_failed_count += 0 if proxy.validated else 1
-        if proxy.validate_failed_count > 20:
+        # 根据是否成功 更新验证失败的次数
+        proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
+        # 如果失败次数大于100 则放弃该代理
+        if proxy.validate_failed_count > 100:
             return True
-
+        # 记录延迟与 验证时间
         proxy.latency_cn = latency_cn
         proxy.latency_oversea = latency_oversea
         proxy.validate_time = time.time()
-        # log(f"{proxy} {proxy.validated} {proxy.latency_cn} {proxy.latency_oversea}")
-        # 10分钟之后继续验证
-        proxy.to_validate_time = time.time() + 60*10 if proxy.validated else time.time() + proxy.validate_failed_count * 60*10
+
+        # 计算下次验证时间
+        proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
 
         return False
 
-    should_remove = validate(proxy, success_cn, latency_cn, success_oversea, latency_oversea)
-    if should_remove:
+    if validate(proxy, success_cn, latency_cn, success_oversea, latency_oversea):
         proxy.delete()
     else:
         proxy.save()

@@ -21,9 +21,6 @@ from fetchers.UUFetcher import UUFetcher
 from fetchers.XiaoShuFetcher import XiaoShuFetcher
 from fetchers.XiLaFetcher import XiLaFetcher
 
-# 数据库文件路径
-DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'data.db')
-
 # 每次运行所有爬取器之后，睡眠多少时间，单位秒
 PROC_FETCHER_SLEEP = 10 * 60
 
@@ -35,6 +32,9 @@ VALIDATE_THREAD_NUM = 100
 
 # 超时时间，单位s
 VALIDATE_TIMEOUT = 5
+
+# 超时时间，单位s
+VALIDATE_TIME_GAP = 30*60
 
 # 验证允许失败次数
 VALIDATE_MAX_FAILS = 2
