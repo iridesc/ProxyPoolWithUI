@@ -47,5 +47,6 @@ class JiangxianliFetcher(BaseFetcher):
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
                         proxies.append(('http', ip, int(port)))
+                        
         
         return list(set(proxies))
