@@ -21,6 +21,8 @@ from fetchers.UUFetcher import UUFetcher
 from fetchers.XiaoShuFetcher import XiaoShuFetcher
 from fetchers.XiLaFetcher import XiLaFetcher
 
+PROCESS_MAX_RUN_TIME = 3*60*60
+
 # 每次运行所有爬取器之后，睡眠多少时间，单位秒
 PROC_FETCHER_SLEEP = 10 * 60
 
