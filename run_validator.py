@@ -93,6 +93,18 @@ def validate_once(proxy, targets):
 
     # 延时 加 传输耗时 对评估代理可用性更有价值
     time_cost = time.time() - start_time
+
+    # start_time = time.time()
+    # r = requests.get(
+    #     url= 'http://47.113.219.219:8000/proxy_tool/',
+    #     timeout=VALIDATE_TIMEOUT,
+    #     proxies={
+    #         'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+    #         'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+    #     }
+    # )
+    # r.raise_for_status()
+
     # 可用 = 整体耗时 < 预设耗时 and 状态码正常
     success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
     return success, int(time_cost*1000) if success else 9999
@@ -112,12 +124,12 @@ def validate_thread(in_que, out_que):
         try:
             success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
         except Exception:
-            success_cn, latency_cn= False, 9999
+            success_cn, latency_cn = False, 9999
 
         try:
             success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
         except Exception:
-            success_oversea, latency_oversea  = False, 9999
+            success_oversea, latency_oversea = False, 9999
 
         out_que.put((proxy, success_cn, latency_cn, success_oversea, latency_oversea,))
 
