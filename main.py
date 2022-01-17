@@ -15,9 +15,9 @@ from config import PROCESS_MAX_RUN_TIME
 
 def main():
     processes = [
-        Process(target=run_fetcher.main, name='fetcher', daemon=True),
-        Process(target=run_validator.main, name='validator', daemon=True),
-        Process(target=manage.run, name='api', daemon=True),
+        Process(target=run_fetcher.main, name='fetcher'),
+        Process(target=run_validator.main, name='validator'),
+        Process(target=manage.run, name='api'),
     ]
 
     while True:
