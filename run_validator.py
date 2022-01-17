@@ -100,6 +100,17 @@ def validate_once(proxy, targets):
     # 延时 加 传输耗时 对评估代理可用性更有价值
     time_cost = time.time() - start_time
 
+    # start_time = time.time()
+    # r = requests.get(
+    #     url= 'http://47.113.219.219:8000/proxy_tool/',
+    #     timeout=VALIDATE_TIMEOUT,
+    #     proxies={
+    #         'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+    #         'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+    #     }
+    # )
+    # r.raise_for_status()
+
     # 可用 = 整体耗时 < 预设耗时 and 状态码正常
     success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
     return success, int(time_cost*1000) if success else 9999
