@@ -22,7 +22,7 @@ class KuaidailiFetcher(BaseFetcher):
         proxies = []
 
         for url in urls:
-            html = requests.get(url, timeout=10).text
+            html = requests.get(url, timeout=10, verify=False).text
             doc = pq(html)
             for item in doc('table tbody tr').items():
                 ip = item.find('td[data-title="IP"]').text()

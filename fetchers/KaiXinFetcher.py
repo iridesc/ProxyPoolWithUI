@@ -27,7 +27,7 @@ class KaiXinFetcher(BaseFetcher):
         port_regex = re.compile(r'^\d+$')
 
         for url in urls:
-            html = requests.get(url, timeout=10).text
+            html = requests.get(url, timeout=10, verify=False).text
             doc = pq(html)
             for line in doc('tr').items():
                 tds = list(line('td').items())

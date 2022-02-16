@@ -16,7 +16,7 @@ class ProxyscanFetcher(BaseFetcher):
         # 此API为随机获取接口，获取策略为：重复取十次后去重
         for _ in range(10):
             url = "https://www.proxyscan.io/api/proxy?last_check=9800&uptime=50&limit=20&_t=" + str(time.time())
-            resp = requests.get(url).json()
+            resp = requests.get(url, verify=False).json()
             for data in resp:
                 protocol = str.lower(data['Type'][0])
                 proxies.append((protocol, data['Ip'], data['Port']))

@@ -34,7 +34,7 @@ class XiLaFetcher(BaseFetcher):
 
         for url in urls:
             time.sleep(1)
-            html = requests.get(url, timeout=10).text
+            html = requests.get(url, timeout=10, verify=False).text
             doc = pq(html)
             for line in doc('tr').items():
                 tds = list(line('td').items())

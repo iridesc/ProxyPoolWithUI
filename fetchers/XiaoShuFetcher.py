@@ -30,7 +30,7 @@ class XiaoShuFetcher(BaseFetcher):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
         }
         for page in range(new_index, new_index + 1):
-            response = requests.get("http://www.xsdaili.cn/dayProxy/" + str(page) + ".html", headers=headers, timeout=10)
+            response = requests.get("http://www.xsdaili.cn/dayProxy/" + str(page) + ".html", headers=headers, timeout=10, verify=False)
             for item in pq(response.text)('a').items():
                 try:
                     if "/dayProxy/ip" in item.attr("href"):

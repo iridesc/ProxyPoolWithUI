@@ -19,7 +19,7 @@ class GoubanjiaFetcher(BaseFetcher):
         proxies = []
 
         headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'}
-        html = requests.get('http://www.goubanjia.com/', headers=headers, timeout=10).text
+        html = requests.get('http://www.goubanjia.com/', headers=headers, timeout=10, verify=False).text
         doc = pq(html)
         for item in doc('table tbody tr').items():
             ipport = item.find('td.ip').html()

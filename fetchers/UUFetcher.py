@@ -25,7 +25,7 @@ class UUFetcher(BaseFetcher):
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/79.0.3945.130 Chrome/79.0.3945.130 Safari/537.36'
         }
-        data = requests.get('https://uu-proxy.com/api/free', headers=headers, timeout=10).text
+        data = requests.get('https://uu-proxy.com/api/free', headers=headers, timeout=10, verify=False).text
         free = json.loads(data)['free']
         proxies = [(item['scheme'], item['ip'], item['port']) for item in free['proxies']]
 

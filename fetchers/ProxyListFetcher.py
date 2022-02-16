@@ -15,7 +15,7 @@ class ProxyListFetcher(BaseFetcher):
         type_list = ['socks4', 'socks5', 'http', 'https']
         for protocol in type_list:
             url = "https://www.proxy-list.download/api/v1/get?type=" + protocol + "&_t=" + str(time.time())
-            proxies_list = requests.get(url).text.split("\n")
+            proxies_list = requests.get(url, verify=False).text.split("\n")
             for data in proxies_list:
                 flag_idx = data.find(":")
                 ip = data[:flag_idx]

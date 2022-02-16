@@ -15,7 +15,7 @@ class MivipFetcher(BaseFetcher):
     @staticmethod
     @retry(tries=3, delay=2)
     def req(tag_name, page):
-        r = requests.get("http://proxy.mimvp.com/freeopen", params={"proxy": tag_name, "sort": "p_checkdtime", "page":page})
+        r = requests.get("http://proxy.mimvp.com/freeopen", params={"proxy": tag_name, "sort": "p_checkdtime", "page":page}, verify=False)
         r.raise_for_status()
         return r
 

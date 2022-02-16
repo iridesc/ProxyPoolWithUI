@@ -16,7 +16,7 @@ class ProxyScrapeFetcher(BaseFetcher):
         for protocol in type_list:
             url = "https://api.proxyscrape.com/?request=displayproxies&proxytype=" + protocol + "&_t=" + str(
                 time.time())
-            resp = requests.get(url).text
+            resp = requests.get(url, verify=False).text
             for data in resp.split("\n"):
                 flag_idx = data.find(":")
                 ip = data[:flag_idx]
