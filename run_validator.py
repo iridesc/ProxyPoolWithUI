@@ -49,8 +49,8 @@ def main():
 
 def save_proxy(proxy):
     # 如果失败次数大于100 则放弃该代理
-    print(proxy.validate_failed_count)
     if proxy.validate_failed_count > 10:
+        print(f"del: {proxy}")
         proxy.delete()
         return False
     else:
@@ -126,6 +126,7 @@ def validate_thread(proxy, out_q):
 
     # 只要一个区域验证成功则认为成功
     proxy.validated = success_cn or success_oversea
+ 
     # 记录延迟与 验证时间
     proxy.latency_cn = latency_cn
     proxy.latency_oversea = latency_oversea
@@ -134,6 +135,7 @@ def validate_thread(proxy, out_q):
     proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
     # 根据是否成功 更新验证失败的次数
     proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
+    print(proxy.validated, proxy.validate_failed_count, success_cn, latency_cn, success_oversea, latency_oversea,)
     out_q.put(proxy)
 
 

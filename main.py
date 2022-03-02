@@ -10,9 +10,6 @@ import run_validator
 import run_fetcher
 from config import PROCESS_MAX_RUN_TIME
 
-# sys.path.append(os.path.dirname(__file__) + os.sep + '../')
-
-
 def main():
     processes = [
         Process(target=run_fetcher.main, name='fetcher'),
