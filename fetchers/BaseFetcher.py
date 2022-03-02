@@ -36,9 +36,14 @@ class BaseFetcher(object):
     def save(self):
         def check(proxy):
             protocol, ip, port = proxy
-            if  protocol and ip and port:
-                if not Proxy.objects.filter(ip=ip, port=port, protocol=protocol).exists():
-                    return True
+            if protocol and ip and port:
+                try:
+                    int(port)
+                except:
+                    pass
+                else:
+                    if not Proxy.objects.filter(ip=ip, port=port, protocol=protocol).exists():
+                        return True
             return False
 
         saved = 0
