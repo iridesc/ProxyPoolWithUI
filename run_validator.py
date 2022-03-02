@@ -6,6 +6,7 @@
 import random
 import threading
 from queue import Queue
+from traceback import print_tb
 from loger import log
 from retry import retry
 from func_timeout import func_set_timeout
@@ -14,7 +15,7 @@ import requests
 from requests.exceptions import ReadTimeout
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
-from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS
+from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
 
 
 def main():
@@ -27,117 +28,103 @@ def main():
         从数据库中获取若干当前待验证的代理
         将代理发送给前面创建的线程
     """
-
-    in_que = Queue()
-    out_que = Queue()
-    running_proxies = set()  # 储存哪些代理正在运行，以字符串的形式储存
-
-    threads = []
-    for _ in range(VALIDATE_THREAD_NUM):
-        thread = threading.Thread(target=validate_thread, args=(in_que, out_que))
-        threads.append(thread)
-        thread.start()
-
     while True:
-        out_cnt = 0
-        while not out_que.empty():
-            proxy, success_cn, latency_cn, success_oversea, latency_oversea = out_que.get()
-            conn.pushValidateResult(proxy, success_cn, latency_cn, success_oversea, latency_oversea)
-            uri = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-            assert uri in running_proxies
-            running_proxies.remove(uri)
-            out_cnt = out_cnt + 1
-        if out_cnt > 0:
-            log(f"验证完成：{out_cnt}")
+        threads = []
+        proxies = conn.getToValidate(VALIDATE_THREAD_NUM)
+        for proxy in proxies:
+            thread = threading.Thread(target=validate_thread, args=(proxy,))
+            threads.append(thread)
+            thread.start()
+            any_start = True
 
-        # 如果正在进行验证的代理足够多，那么就不着急添加新代理
-        if len(running_proxies) >= VALIDATE_THREAD_NUM:
+        if not any_start:
             time.sleep(PROC_VALIDATOR_SLEEP)
-            continue
-
-        # 找一些新的待验证的代理放入队列中
-        added_cnt = 0
-        for proxy in conn.getToValidate(VALIDATE_THREAD_NUM):
-            uri = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-            # 这里找出的代理有可能是正在进行验证的代理，要避免重复加入
-            if uri not in running_proxies:
-                running_proxies.add(uri)
-                in_que.put(proxy)
-                added_cnt += 1
-
-        if added_cnt == 0:
-            time.sleep(PROC_VALIDATOR_SLEEP)
+        else:
+            print(f"验证完成{len(proxies)}")
 
 
-@func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*1.5)
-@retry(tries=VALIDATE_MAX_FAILS)
-def validate_once(proxy, targets):
-    """[随机选择一个验证目标验证一次代理]
-
-    Returns:
-        [bool]: [代理是否可用]
-        [float]: [可用则返回延时， 否则返回None]
-    """
-    @func_set_timeout(VALIDATE_TIMEOUT*1.1)
-    def req(target, proxy):
-        r = requests.get(
-            url=target["url"],
-            timeout=VALIDATE_TIMEOUT,
-            proxies={
-                'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-                'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-            }
-        )
-        r.raise_for_status()
-        return r
-
-    # 获取验证目标
-    target = random.choice(targets)
-    # 记录验证耗时
-    start_time = time.time()
-    r = req(target, proxy)
-
-    # 延时 加 传输耗时 对评估代理可用性更有价值
-    time_cost = time.time() - start_time
-
-    # start_time = time.time()
-    # r = requests.get(
-    #     url= 'http://47.113.219.219:8000/proxy_tool/',
-    #     timeout=VALIDATE_TIMEOUT,
-    #     proxies={
-    #         'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-    #         'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-    #     }
-    # )
-    # r.raise_for_status()
-
-    # 可用 = 整体耗时 < 预设耗时 and 状态码正常
-    success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
-    return success, int(time_cost*1000) if success else 9999
-
-
-def validate_thread(in_que, out_que):
+def validate_thread(proxy):
     """
     验证函数，这个函数会在一个线程中被调用
     in_que: 输入队列，用于接收验证任务
     out_que: 输出队列，用于返回验证结果
     in_que和out_que都是线程安全队列，并且如果队列为空，调用in_que.get()会阻塞线程
     """
+    @func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*1.5)
+    @retry(tries=VALIDATE_MAX_FAILS)
+    def validate_once(proxy, targets):
+        """[随机选择一个验证目标验证一次代理]
 
-    while True:
-        proxy = in_que.get()
-        # 尝试验证代理 返回可用状态与 异常则返回不可用状态
-        try:
-            success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
-        except Exception:
-            success_cn, latency_cn = False, 9999
+        Returns:
+            [bool]: [代理是否可用]
+            [float]: [可用则返回延时， 否则返回None]
+        """
+        @func_set_timeout(VALIDATE_TIMEOUT*1.1)
+        def req(target, proxy):
+            r = requests.get(
+                url=target["url"],
+                timeout=VALIDATE_TIMEOUT,
+                proxies={
+                    'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+                    'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+                }
+            )
+            r.raise_for_status()
+            return r
 
-        try:
-            success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
-        except Exception:
-            success_oversea, latency_oversea = False, 9999
+        # 获取验证目标
+        target = random.choice(targets)
+        # 记录验证耗时
+        start_time = time.time()
+        r = req(target, proxy)
 
-        out_que.put((proxy, success_cn, latency_cn, success_oversea, latency_oversea,))
+        # 延时 加 传输耗时 对评估代理可用性更有价值
+        time_cost = time.time() - start_time
+
+        # start_time = time.time()
+        # r = requests.get(
+        #     url= 'http://47.113.219.219:8000/proxy_tool/',
+        #     timeout=VALIDATE_TIMEOUT,
+        #     proxies={
+        #         'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+        #         'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+        #     }
+        # )
+        # r.raise_for_status()
+
+        # 可用 = 整体耗时 < 预设耗时 and 状态码正常
+        success = r.status_code in target["codes"] and time_cost <= VALIDATE_TIMEOUT
+        return success, int(time_cost*1000) if success else 9999
+
+
+    # 尝试验证代理 返回可用状态与 异常则返回不可用状态
+    try:
+        success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
+    except Exception:
+        success_cn, latency_cn = False, 9999
+
+    try:
+        success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
+    except Exception:
+        success_oversea, latency_oversea = False, 9999
+
+    # 只要一个区域验证成功则认为成功
+    proxy.validated = success_cn or success_oversea
+    # 记录延迟与 验证时间
+    proxy.latency_cn = latency_cn
+    proxy.latency_oversea = latency_oversea
+    proxy.validate_time = time.time()
+    # 计算下次验证时间
+    proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
+    # 根据是否成功 更新验证失败的次数
+    proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
+
+    # 如果失败次数大于100 则放弃该代理
+    if proxy.validate_failed_count > 10:
+        print(f"del {proxy}")
+        proxy.delete()
+    else:
+        proxy.save()
 
 
 if __name__ == '__main__':
