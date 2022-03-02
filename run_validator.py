@@ -5,14 +5,11 @@
 
 import random
 import threading
-from queue import Queue
-from traceback import print_tb
 from loger import log
 from retry import retry
 from func_timeout import func_set_timeout
 import time
 import requests
-from requests.exceptions import ReadTimeout
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
@@ -40,7 +37,7 @@ def main():
         if not any_start:
             time.sleep(PROC_VALIDATOR_SLEEP)
         else:
-            print(f"验证完成{len(proxies)}")
+            log(f"验证完成{len(proxies)}")
 
 
 def validate_thread(proxy):
@@ -121,7 +118,7 @@ def validate_thread(proxy):
 
     # 如果失败次数大于100 则放弃该代理
     if proxy.validate_failed_count > 10:
-        print(f"del {proxy}")
+        log(f"del {proxy}", 2)
         proxy.delete()
     else:
         proxy.save()
