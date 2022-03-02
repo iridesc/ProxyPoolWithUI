@@ -32,7 +32,7 @@ PROC_FETCHER_SLEEP = 10 * 60
 PROC_VALIDATOR_SLEEP = 10
 
 # 验证线程数量
-VALIDATE_THREAD_NUM = 2
+VALIDATE_THREAD_NUM = 20
 
 # 超时时间，单位s
 VALIDATE_TIMEOUT = 5
@@ -41,25 +41,29 @@ VALIDATE_TIMEOUT = 5
 VALIDATE_TIME_GAP = 30*60
 
 # 验证允许失败次数
-VALIDATE_MAX_FAILS = 2
+VALIDATE_MAX_FAILS = 1
 
 # 验证器 验证目标
 VALIDATE_TARGETS_CN = [
     {
         "url": "http://www.baidu.com",
         "codes": [200],
+        "key": "baidu"
     },
     {
         "url": "http://www.sogou.com",
         "codes": [200],
+        "key": "搜狗"
     },
     {
         "url": "http://weibo.com",
         "codes": [200],
+        "key": "微博"
     },
     {
         "url": "http://zhihu.com",
         "codes": [200],
+        "key": "知乎"
     },
 ]
 
@@ -67,18 +71,22 @@ VALIDATE_TARGETS_OVERSEA = [
     {
         "url": "http://google.com",
         "codes": [200],
+        "key": "google"
     },
     {
         "url": "http://duckduckgo.com",
         "codes": [200],
+        "key": "duckduckgo"
     },
     {
         "url": "http://facebook.com",
         "codes": [200],
+        "key": "facebook"
     },
     {
         "url": "http://twitter.com",
         "codes": [200],
+        "key": "twitter"
     },
 ]
 
