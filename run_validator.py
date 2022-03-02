@@ -5,6 +5,7 @@
 
 import random
 import threading
+from queue import Queue
 from loger import log
 from retry import retry
 from func_timeout import func_set_timeout
@@ -27,20 +28,37 @@ def main():
     """
     while True:
         threads = []
+        out_q = Queue()
         proxies = conn.getToValidate(VALIDATE_THREAD_NUM)
         for proxy in proxies:
-            thread = threading.Thread(target=validate_thread, args=(proxy,))
+            thread = threading.Thread(target=validate_thread, args=(proxy,out_q,))
             threads.append(thread)
             thread.start()
-            any_start = True
 
-        if not any_start:
+        for thread in threads:
+            thread.join()
+        
+        saved_count = 0
+        while not out_q.empty():
+            saved_count += save_proxy(out_q.get())
+
+        log(f"验证完成 a:{len(proxies)} s: {saved_count} d: {len(proxies) - saved_count}")
+        if not len(proxies):
             time.sleep(PROC_VALIDATOR_SLEEP)
-        else:
-            log(f"验证完成{len(proxies)}")
 
 
-def validate_thread(proxy):
+def save_proxy(proxy):
+    # 如果失败次数大于100 则放弃该代理
+    print(proxy.validate_failed_count)
+    if proxy.validate_failed_count > 10:
+        proxy.delete()
+        return False
+    else:
+        proxy.save()
+        return True
+
+
+def validate_thread(proxy, out_q):
     """
     验证函数，这个函数会在一个线程中被调用
     in_que: 输入队列，用于接收验证任务
@@ -95,6 +113,7 @@ def validate_thread(proxy):
 
 
     # 尝试验证代理 返回可用状态与 异常则返回不可用状态
+    a = time.time()
     try:
         success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
     except Exception:
@@ -115,13 +134,7 @@ def validate_thread(proxy):
     proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
     # 根据是否成功 更新验证失败的次数
     proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
-
-    # 如果失败次数大于100 则放弃该代理
-    if proxy.validate_failed_count > 10:
-        log(f"del {proxy}", 2)
-        proxy.delete()
-    else:
-        proxy.save()
+    out_q.put(proxy)
 
 
 if __name__ == '__main__':
