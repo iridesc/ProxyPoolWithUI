@@ -126,15 +126,14 @@ def validate_thread(proxy, out_q):
 
     # 只要一个区域验证成功则认为成功
     proxy.validated = success_cn or success_oversea
- 
     # 记录延迟与 验证时间
     proxy.latency_cn = latency_cn
     proxy.latency_oversea = latency_oversea
     proxy.validate_time = time.time()
-    # 计算下次验证时间
-    proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
     # 根据是否成功 更新验证失败的次数
     proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
+    # 计算下次验证时间
+    proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
     out_q.put(proxy)
 
 
