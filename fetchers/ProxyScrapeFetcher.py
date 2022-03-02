@@ -2,7 +2,7 @@ import time
 
 import requests
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 
 
 class ProxyScrapeFetcher(BaseFetcher):
@@ -24,3 +24,9 @@ class ProxyScrapeFetcher(BaseFetcher):
                 proxies.append((protocol, ip, port))
 
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = ProxyScrapeFetcher()
+    ps = f.fetch()
+    print(ps)

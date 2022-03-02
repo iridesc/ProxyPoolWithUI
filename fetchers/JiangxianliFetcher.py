@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 from requests.packages import urllib3
 from pyquery import PyQuery as pq
@@ -50,3 +50,10 @@ class JiangxianliFetcher(BaseFetcher):
                         
         
         return list(set(proxies))
+
+
+
+if __name__ == '__main__':
+    f = JiangxianliFetcher()
+    ps = f.fetch()
+    print(ps)

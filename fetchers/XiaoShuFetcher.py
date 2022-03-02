@@ -5,7 +5,7 @@ import random
 import requests
 from pyquery import PyQuery as pq
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 
 class XiaoShuFetcher(BaseFetcher):
     """
@@ -54,3 +54,9 @@ class XiaoShuFetcher(BaseFetcher):
             proxies = random.sample(proxies, 200)
 
         return proxies
+
+
+if __name__ == '__main__':
+    f = XiaoShuFetcher()
+    ps = f.fetch()
+    print(ps)

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 import json
 
@@ -30,3 +30,9 @@ class UUFetcher(BaseFetcher):
         proxies = [(item['scheme'], item['ip'], item['port']) for item in free['proxies']]
 
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = UUFetcher()
+    ps = f.fetch()
+    print(ps)

@@ -4,7 +4,7 @@ import time
 import requests
 from pyquery import PyQuery as pq
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 
 class KaiXinFetcher(BaseFetcher):
     """
@@ -38,3 +38,9 @@ class KaiXinFetcher(BaseFetcher):
                         proxies.append(('http', ip, int(port)))
 
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = KaiXinFetcher()
+    ps = f.fetch()
+    print(ps)

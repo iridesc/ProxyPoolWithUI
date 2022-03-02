@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 from pyquery import PyQuery as pq
 import re
@@ -57,3 +57,8 @@ class IHuanFetcher(BaseFetcher):
                         pending_urls.append('https://ip.ihuan.me/' + href)
         
         return list(set(proxies))
+
+if __name__ == '__main__':
+    f = IHuanFetcher()
+    ps = f.fetch()
+    print(ps)

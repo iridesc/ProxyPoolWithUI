@@ -2,7 +2,7 @@ import time
 
 import requests
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 
 
 class ProxyListFetcher(BaseFetcher):
@@ -23,3 +23,9 @@ class ProxyListFetcher(BaseFetcher):
                 proxies.append((protocol, ip, port))
 
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = ProxyListFetcher()
+    ps = f.fetch()
+    print(ps)

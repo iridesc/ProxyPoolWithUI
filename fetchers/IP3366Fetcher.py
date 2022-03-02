@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 from pyquery import PyQuery as pq
 import re
@@ -48,3 +48,9 @@ class IP3366Fetcher(BaseFetcher):
                         proxies.append(('http', ip, int(port)))
         
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = IP3366Fetcher()
+    ps = f.fetch()
+    print(ps)

@@ -5,19 +5,30 @@ from retry import retry
 
 import requests
 from bs4 import BeautifulSoup
+import ddddocr
+
 from BaseFetcher import BaseFetcher
+
+ocr = ddddocr.DdddOcr()
 
 
 class MivipFetcher(BaseFetcher):
     """
     http://proxy.mimvp.com/freeopen?proxy=in_hp    
     """
-    @staticmethod
+    base_url = "http://proxy.mimvp.com"
+
     @retry(tries=3, delay=2)
-    def req(tag_name, page):
-        r = requests.get("http://proxy.mimvp.com/freeopen", params={"proxy": tag_name, "sort": "p_checkdtime", "page":page}, verify=False)
+    def req(self, tag_name, page):
+        r = requests.get(f"{self.base_url}/freeopen", params={"proxy": tag_name, "sort": "p_checkdtime", "page":page}, verify=False)
         r.raise_for_status()
         return r
+
+    @staticmethod
+    @retry(tries=3)
+    def get_port(img_url: str):
+        r = requests.get(img_url)
+        return ocr.classification(r.content)
 
 
     def fetch(self):
@@ -28,14 +39,12 @@ class MivipFetcher(BaseFetcher):
         proxies = []
         for tag_name in ["in_hp", "in_socks", "out_hp", "out_socks"]:
             for page in range(1, 500):
-                print(page)
                 r = self.req(tag_name, page)
                 soup = BeautifulSoup(r.text, "html.parser")
                 table_tag = soup.find("table", class_="free-proxylist-tbl").find("tbody")
                 proxy_line_tags = table_tag.find_all("tr")
                 if not proxy_line_tags:
                     break
-            
                 outdate = False
                 hided = False
                 for proxy_line_tag in proxy_line_tags:
@@ -50,8 +59,7 @@ class MivipFetcher(BaseFetcher):
                         if "*" in ip:
                             hided = True
                             break
-                        port = proxy_line_tag.find(class_="free-proxylist-tbl-proxy-port").get_text().lower().strip()
-                        print(proxy_line_tag.find(class_="free-proxylist-tbl-proxy-port"))
+                        port = self.get_port(f"{self.base_url}{proxy_line_tag.img.get('src')}")
                         protocol = proxy_line_tag.find(class_="free-proxylist-tbl-proxy-type").get_text().lower().strip()
                         proxies.append((protocol, ip, port))
                 if outdate or hided:
@@ -62,6 +70,7 @@ class MivipFetcher(BaseFetcher):
 
 
 if __name__ == '__main__':
+
     f = MivipFetcher()
     ps = f.fetch()
     print(ps)

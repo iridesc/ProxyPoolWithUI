@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 from pyquery import PyQuery as pq
 import re
@@ -20,6 +20,7 @@ class GoubanjiaFetcher(BaseFetcher):
 
         headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'}
         html = requests.get('http://www.goubanjia.com/', headers=headers, timeout=10, verify=False).text
+        print(html)
         doc = pq(html)
         for item in doc('table tbody tr').items():
             ipport = item.find('td.ip').html()
@@ -32,9 +33,8 @@ class GoubanjiaFetcher(BaseFetcher):
             ip = ipport.split(':')[0]
             port = self.pde(item.find('td.ip').find('span.port').attr('class').split(' ')[1])
             proxies.append(('http', ip, int(port)))
-        
         return list(set(proxies))
-    
+
     def pde(self, class_key): # 解密函数，端口是加密过的
         """
         key是class内容
@@ -44,3 +44,9 @@ class GoubanjiaFetcher(BaseFetcher):
         for i in range(len(class_key)):
             f.append(str('ABCDEFGHIZ'.index(class_key[i])))
         return str(int(''.join(f)) >> 0x3)
+
+
+if __name__ == '__main__':
+    f = GoubanjiaFetcher()
+    ps = f.fetch()
+    print(ps)

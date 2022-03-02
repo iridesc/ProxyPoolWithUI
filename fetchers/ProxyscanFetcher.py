@@ -1,4 +1,4 @@
-from .BaseFetcher import BaseFetcher
+from BaseFetcher import BaseFetcher
 import requests
 import time
 
@@ -20,5 +20,11 @@ class ProxyscanFetcher(BaseFetcher):
             for data in resp:
                 protocol = str.lower(data['Type'][0])
                 proxies.append((protocol, data['Ip'], data['Port']))
-        
+
         return list(set(proxies))
+
+
+if __name__ == '__main__':
+    f = ProxyscanFetcher()
+    ps = f.fetch()
+    print(ps)
