@@ -1,3 +1,4 @@
+import re
 import django
 import os
 import traceback
@@ -33,17 +34,22 @@ class BaseFetcher(object):
             self.save()
 
     def save(self):
+        def check(proxy):
+            protocol, ip, port = proxy
+            if  protocol and ip and port:
+                if not Proxy.objects.filter(ip=ip, port=port, protocol=protocol).exists():
+                    return True
+            return False
+
         saved = 0
         for proxy in self.proxies:
-            protocol, ip, port = proxy
-            proxy_obj = Proxy()
-            proxy_obj.ip = ip
-            proxy_obj.port = port
-            proxy_obj.protocol = protocol
-            proxy_obj.fetcher = self.fetcher
-            try:
-                proxy_obj.save()
-                saved += 1
-            except Exception as e:
-                log(f"{self.__class__.__name__} 保存代理出现异常{proxy}:{e}", 1)
+            if check(proxy):
+                proxy_obj = Proxy()
+                proxy_obj.protocol, proxy_obj.ip, proxy_obj.port = proxy
+                proxy_obj.fetcher = self.fetcher
+                try:
+                    proxy_obj.save()
+                    saved += 1
+                except Exception as e:
+                    log(f"{self.__class__.__name__} 保存代理出现异常{proxy}:{e}", 1)
         log(f"{self.__class__.__name__} 完成: {saved}/{len(self.proxies)}", 4)
