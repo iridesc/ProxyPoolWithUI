@@ -13,10 +13,7 @@ class XiLaFetcher(BaseFetcher):
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
     name = "www.xiladaili.com"
-
-    def __init__(self):
-        super().__init__()
-        self.index = 0
+    index = 0
 
     def fetch(self):
         """

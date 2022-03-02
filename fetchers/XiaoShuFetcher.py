@@ -1,3 +1,4 @@
+from operator import index
 import re
 import time
 import random
@@ -13,10 +14,7 @@ class XiaoShuFetcher(BaseFetcher):
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
     name = "www.xsdaili.cn"
-
-    def __init__(self):
-        super().__init__()
-        self.index = 0
+    index = 0
 
     def fetch(self):
         """

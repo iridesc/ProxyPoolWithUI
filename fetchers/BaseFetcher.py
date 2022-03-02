@@ -1,4 +1,5 @@
-import re
+import time
+from cv2 import sepFilter2D
 import django
 import os
 import traceback
@@ -14,8 +15,8 @@ class BaseFetcher(object):
     proxies = []
     name = ""
 
-    def __init__(self) -> None:
-        self.fetcher = Fetcher.objects.get(name=self.name)
+    def __init__(self, fetcher) -> None:
+        self.fetcher = fetcher
 
     def fetch(self):
         """
@@ -25,15 +26,17 @@ class BaseFetcher(object):
         raise NotImplementedError()
 
     def run(self):
-        log(f"{self.__class__.__name__} 爬取器开始运行...")
-        try:
-            self.fetch()
-        except Exception:
-            log(f"{self.__class__.__name__}运行爬取器出现异常:\n {traceback.format_exc()}", 1)
-        else:
-            self.save()
+            log(f"{self.__class__.__name__} 爬取器开始运行...")
+            try:
+                self.fetch()
+            except Exception:
+                log(f"{self.__class__.__name__}运行爬取器出现异常:\n {traceback.format_exc()}", 1)
+            else:
+                self.save_proxies()
+            self.update_fetcher()
 
-    def save(self):
+
+    def save_proxies(self):
         def check(proxy):
             protocol, ip, port = proxy
             if protocol and ip and port:
@@ -57,4 +60,9 @@ class BaseFetcher(object):
                     saved += 1
                 except Exception as e:
                     log(f"{self.__class__.__name__} 保存代理出现异常{proxy}:{e}", 1)
+        self.fetcher.last_proxies_amount = len(self.proxies) 
         log(f"{self.__class__.__name__} 完成: {saved}/{len(self.proxies)}", 4)
+
+    def update_fetcher(self):
+        self.fetcher.last_fetch_time = time.time()
+        self.fetcher.save()
