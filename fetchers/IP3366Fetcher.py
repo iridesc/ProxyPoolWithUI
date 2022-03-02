@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from unicodedata import name
 from fetchers.BaseFetcher import BaseFetcher
 import requests
 from pyquery import PyQuery as pq
@@ -9,6 +10,7 @@ class IP3366Fetcher(BaseFetcher):
     """
     http://www.ip3366.net/free/?stype=1
     """
+    name = "www.ip3366.net"
 
     def fetch(self):
         """
@@ -22,7 +24,6 @@ class IP3366Fetcher(BaseFetcher):
                 url = f'http://www.ip3366.net/free/?stype={stype}&page={page}'
                 urls.append(url)
 
-        proxies = []
         ip_regex = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
         port_regex = re.compile(r'^\d+$')
 
@@ -45,9 +46,8 @@ class IP3366Fetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
         
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

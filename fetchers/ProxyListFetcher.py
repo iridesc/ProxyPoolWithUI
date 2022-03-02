@@ -9,6 +9,7 @@ class ProxyListFetcher(BaseFetcher):
     """
     https://www.proxy-list.download/api/v1/get?type={{ protocol }}&_t={{ timestamp }}
     """
+    name = "www.proxy-list.download"
 
     def fetch(self):
         proxies = []
@@ -20,9 +21,8 @@ class ProxyListFetcher(BaseFetcher):
                 flag_idx = data.find(":")
                 ip = data[:flag_idx]
                 port = data[flag_idx + 1:-1]
-                proxies.append((protocol, ip, port))
+                self.proxies.append((protocol, ip, port))
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

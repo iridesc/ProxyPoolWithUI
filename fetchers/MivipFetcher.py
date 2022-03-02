@@ -17,6 +17,7 @@ class MivipFetcher(BaseFetcher):
     http://proxy.mimvp.com/freeopen?proxy=in_hp    
     """
     base_url = "http://proxy.mimvp.com"
+    name = "proxy.mimvp.com"
 
     @retry(tries=3, delay=2)
     def req(self, tag_name, page):
@@ -61,12 +62,11 @@ class MivipFetcher(BaseFetcher):
                             break
                         port = self.get_port(f"{self.base_url}{proxy_line_tag.img.get('src')}")
                         protocol = proxy_line_tag.find(class_="free-proxylist-tbl-proxy-type").get_text().lower().strip()
-                        proxies.append((protocol, ip, port))
+                        self.proxies.append((protocol, ip, port))
                 if outdate or hided:
                     break
             time.sleep(0.5)
 
-        return proxies
 
 
 if __name__ == '__main__':

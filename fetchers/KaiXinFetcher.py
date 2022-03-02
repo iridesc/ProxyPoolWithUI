@@ -11,6 +11,7 @@ class KaiXinFetcher(BaseFetcher):
     http://www.kxdaili.com/dailiip.html
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
+    name = "www.kxdaili.com"
 
     def fetch(self):
         """
@@ -35,9 +36,8 @@ class KaiXinFetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

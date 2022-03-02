@@ -12,6 +12,8 @@ class XiLaFetcher(BaseFetcher):
     http://www.xiladaili.com/gaoni/
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
+    name = "www.xiladaili.com"
+
     def __init__(self):
         super().__init__()
         self.index = 0
@@ -49,9 +51,7 @@ class XiLaFetcher(BaseFetcher):
         # 这个代理源数据太多了，验证器跑不过来
         # 所以只取一部分，一般来说也够用了
         if len(proxies) > 200:
-            proxies = random.sample(proxies, 200)
-        
-        return proxies
+            self.proxies = random.sample(proxies, 200)
 
 
 if __name__ == '__main__':

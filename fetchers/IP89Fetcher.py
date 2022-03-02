@@ -9,6 +9,7 @@ class IP89Fetcher(BaseFetcher):
     """
     https://www.89ip.cn/
     """
+    name = "www.89ip.cn"
 
     def fetch(self):
         """
@@ -21,7 +22,6 @@ class IP89Fetcher(BaseFetcher):
             url = f'https://www.89ip.cn/index_{page}.html'
             urls.append(url)
 
-        proxies = []
         ip_regex = re.compile(r'^\d+\.\d+\.\d+\.\d+$')
         port_regex = re.compile(r'^\d+$')
 
@@ -44,9 +44,8 @@ class IP89Fetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
         
-        return list(set(proxies))
 
 
 

@@ -10,6 +10,7 @@ class IP66Fetcher(BaseFetcher):
     """
     http://www.66ip.cn/
     """
+    name = "www.66ip.cn"
 
     def fetch(self):
         """
@@ -49,9 +50,8 @@ class IP66Fetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
         
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

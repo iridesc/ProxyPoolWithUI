@@ -1,9 +1,20 @@
-# encoding: utf-8
+import django
+import os
+import traceback
+from loger import  log
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
+django.setup()
+from proxy_api.models import Fetcher, Proxy
 
 class BaseFetcher(object):
     """
     所有爬取器的基类
     """
+    proxies = []
+    name = ""
+
+    def __init__(self) -> None:
+        self.fetcher = Fetcher.objects.get(name=self.name)
 
     def fetch(self):
         """
@@ -11,3 +22,28 @@ class BaseFetcher(object):
         返回示例：[('http', '127.0.0.1', 8080), ('http', '127.0.0.1', 1234)]
         """
         raise NotImplementedError()
+
+    def run(self):
+        log(f"{self.__class__.__name__} 爬取器开始运行...")
+        try:
+            self.fetch()
+        except Exception:
+            log(f"{self.__class__.__name__}运行爬取器出现异常:\n {traceback.format_exc()}", 1)
+        else:
+            self.save()
+
+    def save(self):
+        saved = 0
+        for proxy in self.proxies:
+            protocol, ip, port = proxy
+            proxy_obj = Proxy()
+            proxy_obj.ip = ip
+            proxy_obj.port = port
+            proxy_obj.protocol = protocol
+            proxy_obj.fetcher = self.fetcher
+            try:
+                proxy_obj.save()
+                saved += 1
+            except Exception as e:
+                log(f"{self.__class__.__name__} 保存代理出现异常{proxy}:{e}", 1)
+        log(f"{self.__class__.__name__} 完成: {saved}/{len(self.proxies)}", 4)

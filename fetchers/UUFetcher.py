@@ -8,6 +8,7 @@ class UUFetcher(BaseFetcher):
     """
     https://uu-proxy.com/
     """
+    name = "uu-proxy.com"
 
     def fetch(self):
         """
@@ -27,9 +28,8 @@ class UUFetcher(BaseFetcher):
         }
         data = requests.get('https://uu-proxy.com/api/free', headers=headers, timeout=10, verify=False).text
         free = json.loads(data)['free']
-        proxies = [(item['scheme'], item['ip'], item['port']) for item in free['proxies']]
+        self.proxies = [(item['scheme'], item['ip'], item['port']) for item in free['proxies']]
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

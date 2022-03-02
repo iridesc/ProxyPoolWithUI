@@ -9,14 +9,13 @@ class GoubanjiaFetcher(BaseFetcher):
     """
     http://www.goubanjia.com/
     """
+    name = "www.goubanjia.com"
 
     def fetch(self):
         """
         执行一次爬取，返回一个数组，每个元素是(protocol, ip, port)，portocal是协议名称，目前主要为http
         返回示例：[('http', '127.0.0.1', 8080), ('http', '127.0.0.1', 1234)]
         """
-
-        proxies = []
 
         headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'}
         html = requests.get('http://www.goubanjia.com/', headers=headers, timeout=10, verify=False).text
@@ -32,8 +31,8 @@ class GoubanjiaFetcher(BaseFetcher):
 
             ip = ipport.split(':')[0]
             port = self.pde(item.find('td.ip').find('span.port').attr('class').split(' ')[1])
-            proxies.append(('http', ip, int(port)))
-        return list(set(proxies))
+            self.proxies.append(('http', ip, int(port)))
+
 
     def pde(self, class_key): # 解密函数，端口是加密过的
         """

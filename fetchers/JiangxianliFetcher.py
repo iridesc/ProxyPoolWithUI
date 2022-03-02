@@ -11,6 +11,7 @@ class JiangxianliFetcher(BaseFetcher):
     """
     https://ip.jiangxianli.com/?page=1
     """
+    name = "ip.jiangxianli.com"
 
     def fetch(self):
         """
@@ -46,10 +47,9 @@ class JiangxianliFetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
                         
         
-        return list(set(proxies))
 
 
 

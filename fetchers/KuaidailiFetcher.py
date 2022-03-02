@@ -9,6 +9,7 @@ class KuaidailiFetcher(BaseFetcher):
     """
     https://www.kuaidaili.com/free
     """
+    name = "www.kuaidaili.com"
 
     def fetch(self):
         """
@@ -33,10 +34,9 @@ class KuaidailiFetcher(BaseFetcher):
                 ip = tds[0].get_text()
                 port = tds[1].get_text()
                 protocol = tds[3].get_text().lower()
-                proxies.append((protocol, ip, port))
+                self.proxies.append((protocol, ip, port))
             time.sleep(2)
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

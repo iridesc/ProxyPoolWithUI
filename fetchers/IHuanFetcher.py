@@ -10,6 +10,7 @@ class IHuanFetcher(BaseFetcher):
     https://ip.ihuan.me/
     爬这个网站要温柔点，站长表示可能会永久关站
     """
+    name = "ip.ihuan.me"
 
     def fetch(self):
         """
@@ -48,15 +49,14 @@ class IHuanFetcher(BaseFetcher):
                     ip = tds[0].text().strip()
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
-                        proxies.append(('http', ip, int(port)))
+                        self.proxies.append(('http', ip, int(port)))
             
             if url.endswith('/'): # 当前是第一页，解析后面几页的链接
                 for item in list(doc('.pagination a').items())[1:-1]:
                     href = item.attr('href')
                     if href is not None and href.startswith('?page='):
                         pending_urls.append('https://ip.ihuan.me/' + href)
-        
-        return list(set(proxies))
+
 
 if __name__ == '__main__':
     f = IHuanFetcher()

@@ -6,6 +6,7 @@ class ProxyscanFetcher(BaseFetcher):
     """
     https://www.proxyscan.io/api/proxy?last_check=9800&uptime=50&limit=20&_t={{ timestamp }}
     """
+    name = "www.proxyscan.io"
 
     def fetch(self):
         """
@@ -19,9 +20,8 @@ class ProxyscanFetcher(BaseFetcher):
             resp = requests.get(url, verify=False).json()
             for data in resp:
                 protocol = str.lower(data['Type'][0])
-                proxies.append((protocol, data['Ip'], data['Port']))
+                self.proxies.append((protocol, data['Ip'], data['Port']))
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ class ProxyScrapeFetcher(BaseFetcher):
     """
     https://api.proxyscrape.com/?request=displayproxies&proxytype={{ protocol }}&_t={{ timestamp }}
     """
+    name = "proxyscrape.com"
 
     def fetch(self):
         proxies = []
@@ -21,9 +22,8 @@ class ProxyScrapeFetcher(BaseFetcher):
                 flag_idx = data.find(":")
                 ip = data[:flag_idx]
                 port = data[flag_idx + 1:-1]
-                proxies.append((protocol, ip, port))
+                self.proxies.append((protocol, ip, port))
 
-        return list(set(proxies))
 
 
 if __name__ == '__main__':
