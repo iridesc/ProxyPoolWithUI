@@ -85,6 +85,9 @@ def validate_thread(proxy, out_q):
                 }
             )
             r.raise_for_status()
+            if target["key"] not in r.text:
+                log("key not exist!", 1)
+                raise Exception("key not in r.text") 
             return r
 
         # 获取验证目标
