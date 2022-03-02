@@ -12,11 +12,12 @@ from func_timeout import func_set_timeout
 from func_timeout.exceptions import FunctionTimedOut
 import time
 import requests
-from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError
+from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, ChunkedEncodingError
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
 
+pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, FunctionTimedOut, ChunkedEncodingError)
 
 def main():
     """
@@ -123,17 +124,19 @@ def validate_thread(proxy, out_q):
         success = time_cost <= VALIDATE_TIMEOUT
         return success, int(time_cost*1000) if success else 9999
 
-    pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, FunctionTimedOut)
     # 尝试验证代理 返回可用状态与 异常则返回不可用状态
     try:
         success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
     except pass_error:
         success_cn, latency_cn = False, 9999
-
+    except Exception as e:
+        log(e.__class__.__name__, 2)
     try:
         success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
     except pass_error:
         success_oversea, latency_oversea = False, 9999
+    except Exception as e:
+        log(e.__class__.__name__, 2)
 
     # 只要一个区域验证成功则认为成功
     proxy.validated = success_cn or success_oversea
