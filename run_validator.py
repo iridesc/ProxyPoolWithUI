@@ -135,7 +135,6 @@ def validate_thread(proxy, out_q):
     proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP*(1 if proxy.validated else proxy.validate_failed_count ** 2)
     # 根据是否成功 更新验证失败的次数
     proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
-    print(proxy.validated, proxy.validate_failed_count, success_cn, latency_cn, success_oversea, latency_oversea,)
     out_q.put(proxy)
 
 

@@ -25,7 +25,7 @@ def main():
                 p.start()
                 p.start_time = time.time()
                 processes[i] = p
-        time.sleep(1)
+        time.sleep(3)
 
 
 if __name__ == '__main__':
