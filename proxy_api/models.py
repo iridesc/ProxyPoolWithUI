@@ -30,5 +30,4 @@ class Proxy(models.Model):
 
     validate_time = models.FloatField(default=0)
     to_validate_time = models.FloatField(default=0)
-    validate_failed_count = 0
-
+    validate_failed_count = models.IntegerField(default=0)
