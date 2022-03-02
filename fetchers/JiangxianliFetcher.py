@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 import requests
 from requests.packages import urllib3
 from pyquery import PyQuery as pq

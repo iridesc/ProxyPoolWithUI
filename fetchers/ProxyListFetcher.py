@@ -2,7 +2,7 @@ import time
 
 import requests
 
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 
 
 class ProxyListFetcher(BaseFetcher):

@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 import ddddocr
 
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 
 ocr = ddddocr.DdddOcr()
 

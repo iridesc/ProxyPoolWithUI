@@ -1,4 +1,4 @@
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 import requests
 import time
 

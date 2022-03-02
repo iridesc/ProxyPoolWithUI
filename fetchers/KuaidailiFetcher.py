@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 import time
 import requests
 from bs4 import BeautifulSoup

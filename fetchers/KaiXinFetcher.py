@@ -4,7 +4,7 @@ import time
 import requests
 from pyquery import PyQuery as pq
 
-from BaseFetcher import BaseFetcher
+from fetchers.BaseFetcher import BaseFetcher
 
 class KaiXinFetcher(BaseFetcher):
     """
