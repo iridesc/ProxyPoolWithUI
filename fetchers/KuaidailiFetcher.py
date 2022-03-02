@@ -27,8 +27,6 @@ class KuaidailiFetcher(BaseFetcher):
         for url in urls:
             r = requests.get(url, headers=headers, timeout=10, verify=False)
             soup = BeautifulSoup(r.text, "html.parser")
-            with open("test.html", "w", encoding="utf8") as f:
-                f.write(r.text)
             for item in soup.tbody.find_all("tr"):
                 tds = item.find_all("td")
                 ip = tds[0].get_text()
