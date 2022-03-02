@@ -12,12 +12,14 @@ from func_timeout import func_set_timeout
 from func_timeout.exceptions import FunctionTimedOut
 import time
 import requests
-from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, ChunkedEncodingError
+from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError,\
+    ChunkedEncodingError, InvalidSchema
 from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
 
-pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, FunctionTimedOut, ChunkedEncodingError)
+pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, FunctionTimedOut,
+              ChunkedEncodingError, InvalidSchema)
 
 def main():
     """
