@@ -132,14 +132,17 @@ def validate_thread(proxy, out_q):
     except pass_error:
         success_cn, latency_cn = False, 9999
     except Exception as e:
+        log(str(e), 1)
         log(e.__class__.__name__, 2)
+        success_cn, latency_cn = False, 9999
     try:
         success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
     except pass_error:
         success_oversea, latency_oversea = False, 9999
     except Exception as e:
+        log(str(e), 1)
         log(e.__class__.__name__, 2)
-
+        success_oversea, latency_oversea = False, 9999
     # 只要一个区域验证成功则认为成功
     proxy.validated = success_cn or success_oversea
     # 记录延迟与 验证时间
