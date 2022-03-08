@@ -3,6 +3,7 @@
 验证器逻辑
 """
 
+import hashlib
 import random
 import threading
 from queue import Queue
@@ -101,8 +102,9 @@ def validate_thread(proxy, out_q):
             raise Exception("code not expected")
 
         if target["key"] not in r.text:
-            # with open(f"{target['key']}-{time.time()}.html", "w", encoding="utf8") as f:
-            #     f.write(r.text)
+            with open(f"{target['key']}-{hashlib.md5(r.text.encode('utf-8'))}.html", "w", encoding="utf8") as f:
+                f.write(r.text)
+
             log("key not exist!", 1)
             raise Exception("key not in r.text")
         else:
