@@ -37,7 +37,6 @@ class MivipFetcher(BaseFetcher):
         执行一次爬取，返回一个数组，每个元素是(protocol, ip, port)，portocol是协议名称，目前主要为http
         返回示例：[('http', '127.0.0.1', 8080), ('http', '127.0.0.1', 1234)]
         """
-        proxies = []
         for tag_name in ["in_hp", "in_socks", "out_hp", "out_socks"]:
             for page in range(1, 500):
                 r = self.req(tag_name, page)
