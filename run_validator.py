@@ -155,7 +155,7 @@ def validate_thread(proxy, out_q):
     except Exception as e:
         log(str(e), 1)
         log(e.__class__.__name__, 2)
-        latency_oversea = False, 9999
+        latency_oversea = 9999
     
     # 记录延迟与 验证时间
     proxy.latency_cn = latency_cn
