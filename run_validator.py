@@ -80,18 +80,25 @@ def validate_thread(proxy, out_q):
             [bool]: [代理是否可用]
             [float]: [可用则返回延时， 否则返回None]
         """
+        def check_content(content, target):
+            for key in target["keys"]:
+                if key.lower() in content.lower():
+                    return True
+            with open(f"{target['key']}-{hashlib.md5(content.encode('utf-8'))}.html", "w", encoding="utf8") as f:
+                f.write(r.text)
+            return False
 
         # 获取验证目标
         target = random.choice(targets)
+
         # 记录验证耗时
         start_time = time.time()
+
         r = requests.get(
             url=target["url"],
             timeout=VALIDATE_TIMEOUT,
             headers={
                 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'},
-
-
             proxies={
                 'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
                 'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
@@ -101,14 +108,6 @@ def validate_thread(proxy, out_q):
         if r.status_code not in target["codes"]:
             raise Exception("code not expected")
 
-        if target["key"] not in r.text:
-            with open(f"{target['key']}-{hashlib.md5(r.text.encode('utf-8'))}.html", "w", encoding="utf8") as f:
-                f.write(r.text)
-
-            log("key not exist!", 1)
-            raise Exception("key not in r.text")
-        else:
-            log("验证通过", 4)
 
         # 延时 加 传输耗时 对评估代理可用性更有价值
         time_cost = time.time() - start_time
@@ -124,9 +123,15 @@ def validate_thread(proxy, out_q):
         # )
         # r.raise_for_status()
 
-        # 可用 = 整体耗时 < 预设耗时 and 状态码正常
-        success = time_cost <= VALIDATE_TIMEOUT
-        return success, int(time_cost*1000) if success else 9999
+        # 检查关键字
+        if check_content(r.text):
+            log("验证通过", 4)
+            # 可用 = 整体耗时 < 预设耗时 and 状态码正常
+            success = time_cost <= VALIDATE_TIMEOUT
+            return success, int(time_cost*1000) if success else 9999
+        else:
+            log("key not exist!", 1)
+            raise Exception("key not in r.text")
 
     # 尝试验证代理 返回可用状态与 异常则返回不可用状态
     try:
@@ -137,6 +142,7 @@ def validate_thread(proxy, out_q):
         log(str(e), 1)
         log(e.__class__.__name__, 2)
         success_cn, latency_cn = False, 9999
+
     try:
         success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
     except pass_error:

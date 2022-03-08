@@ -48,22 +48,22 @@ VALIDATE_TARGETS_CN = [
     {
         "url": "http://www.baidu.com",
         "codes": [200],
-        "key": "baidu"
+        "keys": ["baidu", "百度"]
     },
     {
         "url": "http://www.sogou.com",
         "codes": [200],
-        "key": "搜狗"
+        "keys": ["搜狗", "sogou"]
     },
     {
         "url": "http://weibo.com",
         "codes": [200],
-        "key": "微博"
+        "keys": ["微博", "sina"]
     },
     {
         "url": "http://zhihu.com",
         "codes": [200],
-        "key": "知乎"
+        "keys": ["知乎", "zhihu"]
     },
 ]
 
@@ -71,22 +71,22 @@ VALIDATE_TARGETS_OVERSEA = [
     {
         "url": "http://google.com",
         "codes": [200],
-        "key": "google"
+        "keys": ["google", "谷歌"]
     },
     {
         "url": "http://duckduckgo.com",
         "codes": [200],
-        "key": "duckduckgo"
+        "keys": ["duckduckgo"]
     },
     {
         "url": "http://facebook.com",
         "codes": [200],
-        "key": "facebook"
+        "keys": ["facebook"]
     },
     {
         "url": "http://twitter.com",
         "codes": [200],
-        "key": "twitter"
+        "keys": ["twitter"]
     },
 ]
 
