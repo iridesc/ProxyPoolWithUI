@@ -73,12 +73,15 @@ def validate_thread(proxy, out_q):
     """
     @func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*1.5)
     @retry(tries=VALIDATE_MAX_FAILS)
-    def validate_once(proxy, targets):
-        """[随机选择一个验证目标验证一次代理]
+    def validate_once(proxy, targets)-> int:
+        """_随机选择一个目标来验证当前代理_
+
+        Args:
+            proxy : _代理_
+            targets : _验证目标_
 
         Returns:
-            [bool]: [代理是否可用]
-            [float]: [可用则返回延时， 否则返回None]
+            int: _代理耗时（ms）_
         """
         def check_content(content, target):
             for key in target["keys"]:
@@ -93,7 +96,7 @@ def validate_thread(proxy, out_q):
 
         # 记录验证耗时
         start_time = time.time()
-
+        # 验证可访问性
         r = requests.get(
             url=target["url"],
             timeout=VALIDATE_TIMEOUT,
@@ -104,13 +107,25 @@ def validate_thread(proxy, out_q):
                 'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
             }
         )
-        r.raise_for_status()
-        if r.status_code not in target["codes"]:
-            raise Exception("code not expected")
 
-
-        # 延时 加 传输耗时 对评估代理可用性更有价值
+        # 验证访问延时
         time_cost = time.time() - start_time
+        if time_cost > VALIDATE_TIMEOUT:
+            raise Exception("请求超时")
+
+        # 验证状态码
+        elif r.status_code not in target["codes"]:
+            raise Exception(f"状态码不允许：{r.status_code}")
+
+        # 检查关键字
+        elif not check_content(r.text, target):
+            log("key not exist!", 1)
+            raise Exception("key not in r.text")
+
+        else:
+            log("验证通过", 4)
+            # 可用 = 整体耗时 < 预设耗时 and 状态码正常
+            return int(time_cost*1000)
 
         # start_time = time.time()
         # r = requests.get(
@@ -123,42 +138,34 @@ def validate_thread(proxy, out_q):
         # )
         # r.raise_for_status()
 
-        # 检查关键字
-        if check_content(r.text):
-            log("验证通过", 4)
-            # 可用 = 整体耗时 < 预设耗时 and 状态码正常
-            success = time_cost <= VALIDATE_TIMEOUT
-            return success, int(time_cost*1000) if success else 9999
-        else:
-            log("key not exist!", 1)
-            raise Exception("key not in r.text")
-
     # 尝试验证代理 返回可用状态与 异常则返回不可用状态
     try:
-        success_cn, latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
+        latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
     except pass_error:
-        success_cn, latency_cn = False, 9999
+        latency_cn = 9999
     except Exception as e:
         log(str(e), 1)
         log(e.__class__.__name__, 2)
-        success_cn, latency_cn = False, 9999
+        latency_cn = 9999
 
     try:
-        success_oversea, latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
+        latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
     except pass_error:
-        success_oversea, latency_oversea = False, 9999
+        latency_oversea = 9999
     except Exception as e:
         log(str(e), 1)
         log(e.__class__.__name__, 2)
-        success_oversea, latency_oversea = False, 9999
-    # 只要一个区域验证成功则认为成功
-    proxy.validated = success_cn or success_oversea
+        latency_oversea = False, 9999
+    
     # 记录延迟与 验证时间
     proxy.latency_cn = latency_cn
     proxy.latency_oversea = latency_oversea
-    proxy.validate_time = time.time()
+    # 只要一个区域验证成功则认为成功
+    proxy.validated = latency_cn != 9999 or latency_oversea != 9999
     # 根据是否成功 更新验证失败的次数
     proxy.validate_failed_count = 0 if proxy.validated else proxy.validate_failed_count + 1
+    # 验证时间
+    proxy.validate_time = time.time()
     # 计算下次验证时间
     proxy.to_validate_time = proxy.validate_time + VALIDATE_TIME_GAP * \
         (1 if proxy.validated else proxy.validate_failed_count ** 2)
