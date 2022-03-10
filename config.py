@@ -46,22 +46,22 @@ VALIDATE_MAX_FAILS = 1
 # 验证器 验证目标
 VALIDATE_TARGETS_CN = [
     {
-        "url": "http://www.baidu.com",
+        "url": "www.baidu.com",
         "codes": [200],
         "keys": ["baidu", "百度"]
     },
     {
-        "url": "http://www.sogou.com",
+        "url": "www.sogou.com",
         "codes": [200],
         "keys": ["搜狗", "sogou"]
     },
     {
-        "url": "http://weibo.com",
+        "url": "weibo.com",
         "codes": [200],
         "keys": ["微博", "sina"]
     },
     {
-        "url": "http://zhihu.com",
+        "url": "zhihu.com",
         "codes": [200],
         "keys": ["知乎", "zhihu"]
     },
@@ -69,22 +69,22 @@ VALIDATE_TARGETS_CN = [
 
 VALIDATE_TARGETS_OVERSEA = [
     {
-        "url": "http://google.com",
+        "url": "google.com",
         "codes": [200],
         "keys": ["google", "谷歌"]
     },
     {
-        "url": "http://duckduckgo.com",
+        "url": "duckduckgo.com",
         "codes": [200],
         "keys": ["duckduckgo"]
     },
     {
-        "url": "http://facebook.com",
+        "url": "facebook.com",
         "codes": [200],
         "keys": ["facebook"]
     },
     {
-        "url": "http://twitter.com",
+        "url": "twitter.com",
         "codes": [200],
         "keys": ["twitter"]
     },

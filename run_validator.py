@@ -73,7 +73,7 @@ def validate_thread(proxy, out_q):
     """
     @func_set_timeout(VALIDATE_MAX_FAILS*VALIDATE_TIMEOUT*1.5)
     @retry(tries=VALIDATE_MAX_FAILS)
-    def validate_once(proxy, targets)-> int:
+    def validate_once(proxy, targets, protocol) -> int:
         """_随机选择一个目标来验证当前代理_
 
         Args:
@@ -98,7 +98,7 @@ def validate_thread(proxy, out_q):
         start_time = time.time()
         # 验证可访问性
         r = requests.get(
-            url=target["url"],
+            url=f"{protocol}://{target['url']}",
             timeout=VALIDATE_TIMEOUT,
             headers={
                 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'},
@@ -137,26 +137,27 @@ def validate_thread(proxy, out_q):
         #     }
         # )
         # r.raise_for_status()
+    latency_cn, latency_oversea = 9999, 9999
+    for protocol in ["http", "https"]:
+        if latency_cn == 9999:
+            # 尝试验证代理 返回延时
+            try:
+                latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN, protocol)
+            except pass_error:
+                pass
+            except Exception as e:
+                log(str(e), 1)
+                log(e.__class__.__name__, 2)
 
-    # 尝试验证代理 返回可用状态与 异常则返回不可用状态
-    try:
-        latency_cn = validate_once(proxy, VALIDATE_TARGETS_CN)
-    except pass_error:
-        latency_cn = 9999
-    except Exception as e:
-        log(str(e), 1)
-        log(e.__class__.__name__, 2)
-        latency_cn = 9999
+        if latency_oversea == 9999:
+            try:
+                latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA, protocol)
+            except pass_error:
+                pass
+            except Exception as e:
+                log(str(e), 1)
+                log(e.__class__.__name__, 2)
 
-    try:
-        latency_oversea = validate_once(proxy, VALIDATE_TARGETS_OVERSEA)
-    except pass_error:
-        latency_oversea = 9999
-    except Exception as e:
-        log(str(e), 1)
-        log(e.__class__.__name__, 2)
-        latency_oversea = 9999
-    
     # 记录延迟与 验证时间
     proxy.latency_cn = latency_cn
     proxy.latency_oversea = latency_oversea
