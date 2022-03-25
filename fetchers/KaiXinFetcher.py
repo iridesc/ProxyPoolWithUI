@@ -11,7 +11,6 @@ class KaiXinFetcher(BaseFetcher):
     http://www.kxdaili.com/dailiip.html
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
-    name = "www.kxdaili.com"
 
     def fetch(self):
         """

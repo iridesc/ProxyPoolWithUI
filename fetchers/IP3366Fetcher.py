@@ -10,7 +10,6 @@ class IP3366Fetcher(BaseFetcher):
     """
     http://www.ip3366.net/free/?stype=1
     """
-    name = "www.ip3366.net"
 
     def fetch(self):
         """

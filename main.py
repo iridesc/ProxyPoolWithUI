@@ -19,12 +19,17 @@ def main():
 
     while True:
         for i, process in enumerate(processes):
-            if not process.is_alive() or time.time() - process.start_time > PROCESS_MAX_RUN_TIME:
+            if time.time() - process.start_time > PROCESS_MAX_RUN_TIME:
+                log(f'进程 {process.name} 运行超时')
+                process.terminate()
+
+            if not process.is_alive():
                 log(f'启动{process.name}进程')
                 p = Process(target=process._target, name=process.name, daemon=True)
                 p.start()
                 p.start_time = time.time()
                 processes[i] = p
+
         time.sleep(3)
 
 

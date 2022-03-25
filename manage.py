@@ -16,10 +16,12 @@ def init():
             "forget to activate a virtual environment?"
         ) from exc
 
+
 def main():
     """Run administrative tasks."""
     execute_from_command_line = init()
     execute_from_command_line(sys.argv)
+
 
 def run():
     execute_from_command_line = init()
@@ -28,4 +30,3 @@ def run():
 
 if __name__ == '__main__':
     main()
-    

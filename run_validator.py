@@ -13,6 +13,13 @@ from func_timeout import func_set_timeout
 from func_timeout.exceptions import FunctionTimedOut
 import time
 import requests
+
+import os
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
+django.setup()
+from proxy_api.models import Fetcher, StatusRecode, Proxy
+
 from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError,\
     ChunkedEncodingError, InvalidSchema
 from db import conn
@@ -35,7 +42,8 @@ def main():
     while True:
         threads = []
         out_q = Queue()
-        proxies = conn.getToValidate(VALIDATE_THREAD_NUM)
+        proxies = Proxy.objects.filter(
+            to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")[:VALIDATE_THREAD_NUM]
         for proxy in proxies:
             thread = threading.Thread(target=validate_thread, args=(proxy, out_q,))
             threads.append(thread)

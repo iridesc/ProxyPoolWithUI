@@ -10,7 +10,6 @@ class IHuanFetcher(BaseFetcher):
     https://ip.ihuan.me/
     爬这个网站要温柔点，站长表示可能会永久关站
     """
-    name = "ip.ihuan.me"
 
     def fetch(self):
         """

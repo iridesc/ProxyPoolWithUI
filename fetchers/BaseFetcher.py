@@ -1,5 +1,4 @@
 import time
-from cv2 import sepFilter2D
 import django
 import os
 import traceback
@@ -13,7 +12,8 @@ class BaseFetcher(object):
     所有爬取器的基类
     """
     proxies = []
-    name = ""
+    # fetch_gap = 30*60
+    fetch_gap = 10
 
     def __init__(self, fetcher) -> None:
         self.fetcher = fetcher
@@ -35,14 +35,13 @@ class BaseFetcher(object):
                 self.save_proxies()
             self.update_fetcher()
 
-
     def save_proxies(self):
         def check(proxy):
             protocol, ip, port = proxy
             if protocol and ip and port:
                 try:
                     int(port)
-                except:
+                except Exception:
                     pass
                 else:
                     if not Proxy.objects.filter(ip=ip, port=port, protocol=protocol).exists():
@@ -60,7 +59,7 @@ class BaseFetcher(object):
                     saved += 1
                 except Exception as e:
                     log(f"{self.__class__.__name__} 保存代理出现异常{proxy}:{e}", 1)
-        self.fetcher.last_proxies_amount = len(self.proxies) 
+        self.fetcher.last_proxies_amount = len(self.proxies)
         log(f"{self.__class__.__name__} 完成: {saved}/{len(self.proxies)}", 4)
 
     def update_fetcher(self):

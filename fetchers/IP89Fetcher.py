@@ -9,7 +9,6 @@ class IP89Fetcher(BaseFetcher):
     """
     https://www.89ip.cn/
     """
-    name = "www.89ip.cn"
 
     def fetch(self):
         """

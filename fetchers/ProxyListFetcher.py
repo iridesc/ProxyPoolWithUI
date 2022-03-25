@@ -9,7 +9,6 @@ class ProxyListFetcher(BaseFetcher):
     """
     https://www.proxy-list.download/api/v1/get?type={{ protocol }}&_t={{ timestamp }}
     """
-    name = "www.proxy-list.download"
 
     def fetch(self):
         proxies = []

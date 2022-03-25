@@ -9,7 +9,6 @@ class KuaidailiFetcher(BaseFetcher):
     """
     https://www.kuaidaili.com/free
     """
-    name = "www.kuaidaili.com"
 
     def fetch(self):
         """

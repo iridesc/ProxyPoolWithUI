@@ -9,7 +9,6 @@ class ProxyScrapeFetcher(BaseFetcher):
     """
     https://api.proxyscrape.com/?request=displayproxies&proxytype={{ protocol }}&_t={{ timestamp }}
     """
-    name = "proxyscrape.com"
 
     def fetch(self):
         proxies = []

@@ -9,7 +9,6 @@ class GoubanjiaFetcher(BaseFetcher):
     """
     http://www.goubanjia.com/
     """
-    name = "www.goubanjia.com"
 
     def fetch(self):
         """

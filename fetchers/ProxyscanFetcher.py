@@ -6,7 +6,6 @@ class ProxyscanFetcher(BaseFetcher):
     """
     https://www.proxyscan.io/api/proxy?last_check=9800&uptime=50&limit=20&_t={{ timestamp }}
     """
-    name = "www.proxyscan.io"
 
     def fetch(self):
         """

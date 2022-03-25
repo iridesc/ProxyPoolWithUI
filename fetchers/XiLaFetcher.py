@@ -12,7 +12,6 @@ class XiLaFetcher(BaseFetcher):
     http://www.xiladaili.com/gaoni/
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
-    name = "www.xiladaili.com"
     index = 0
 
     def fetch(self):

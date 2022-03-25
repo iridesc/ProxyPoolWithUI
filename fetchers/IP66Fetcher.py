@@ -10,7 +10,6 @@ class IP66Fetcher(BaseFetcher):
     """
     http://www.66ip.cn/
     """
-    name = "www.66ip.cn"
 
     def fetch(self):
         """
@@ -53,8 +52,6 @@ class IP66Fetcher(BaseFetcher):
                         self.proxies.append(('http', ip, int(port)))
         
 
-
 if __name__ == '__main__':
     f = IP66Fetcher()
-    ps = f.fetch()
-    print(ps)
+    f.fetch()

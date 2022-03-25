@@ -8,7 +8,6 @@ class UUFetcher(BaseFetcher):
     """
     https://uu-proxy.com/
     """
-    name = "uu-proxy.com"
 
     def fetch(self):
         """

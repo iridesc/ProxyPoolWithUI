@@ -17,7 +17,6 @@ class MivipFetcher(BaseFetcher):
     http://proxy.mimvp.com/freeopen?proxy=in_hp    
     """
     base_url = "http://proxy.mimvp.com"
-    name = "proxy.mimvp.com"
 
     @retry(tries=3, delay=2)
     def req(self, tag_name, page):

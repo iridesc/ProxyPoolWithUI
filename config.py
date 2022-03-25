@@ -25,14 +25,11 @@ from fetchers.MivipFetcher import MivipFetcher
 # 进程最大运行时间
 PROCESS_MAX_RUN_TIME = 3*60*60
 
-# 每次运行所有爬取器之后，睡眠多少时间，单位秒
-PROC_FETCHER_SLEEP = 10 * 60
-
 # 验证器每次睡眠的时间，单位秒
 PROC_VALIDATOR_SLEEP = 10
 
 # 验证线程数量
-VALIDATE_THREAD_NUM = 20
+VALIDATE_THREAD_NUM = 100
 
 # 超时时间，单位s
 VALIDATE_TIMEOUT = 5

@@ -1,4 +1,3 @@
-# encoding: utf-8
 
 from fetchers.BaseFetcher import BaseFetcher
 import requests
@@ -11,7 +10,6 @@ class JiangxianliFetcher(BaseFetcher):
     """
     https://ip.jiangxianli.com/?page=1
     """
-    name = "ip.jiangxianli.com"
 
     def fetch(self):
         """

@@ -13,7 +13,6 @@ class XiaoShuFetcher(BaseFetcher):
     http://www.xsdaili.cn/
     代码由 [Zealot666](https://github.com/Zealot666) 提供
     """
-    name = "www.xsdaili.cn"
     index = 0
 
     def fetch(self):
