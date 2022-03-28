@@ -22,7 +22,6 @@ from proxy_api.models import Fetcher, StatusRecode, Proxy
 
 from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError,\
     ChunkedEncodingError, InvalidSchema
-from db import conn
 from config import PROC_VALIDATOR_SLEEP, VALIDATE_THREAD_NUM, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
 

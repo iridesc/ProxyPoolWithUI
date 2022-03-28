@@ -86,21 +86,3 @@ VALIDATE_TARGETS_OVERSEA = [
         "keys": ["twitter"]
     },
 ]
-
-FETCHER_MAP = {
-    "www.xsdaili.cn": XiaoShuFetcher,
-    "www.xiladaili.com": XiLaFetcher,
-    "www.proxyscan.io": ProxyscanFetcher,
-    "www.proxy-list.download": ProxyListFetcher,
-    "www.kxdaili.com": KaiXinFetcher,
-    "www.kuaidaili.com": KuaidailiFetcher,
-    "www.ip3366.net": IP3366Fetcher,
-    "www.goubanjia.com": GoubanjiaFetcher,
-    "www.89ip.cn": IP89Fetcher,
-    "www.66ip.cn": IP66Fetcher,
-    "uu-proxy.com": UUFetcher,
-    "proxyscrape.com": ProxyScrapeFetcher,
-    "ip.jiangxianli.com": JiangxianliFetcher,
-    "ip.ihuan.me": IHuanFetcher,
-    "proxy.mimvp.com": MivipFetcher
-}

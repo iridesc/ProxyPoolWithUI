@@ -4,7 +4,6 @@
 """
 
 import time
-from config import FETCHER_MAP
 import os
 import django
 import importlib
