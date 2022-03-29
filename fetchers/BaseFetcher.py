@@ -12,8 +12,7 @@ class BaseFetcher(object):
     所有爬取器的基类
     """
     proxies = []
-    # fetch_gap = 30*60
-    fetch_gap = 10
+    fetch_gap = 30*60
 
     def __init__(self, fetcher) -> None:
         self.fetcher = fetcher

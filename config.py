@@ -23,7 +23,7 @@ from fetchers.XiLaFetcher import XiLaFetcher
 from fetchers.MivipFetcher import MivipFetcher
 
 # 进程最大运行时间
-PROCESS_MAX_RUN_TIME = 3*60*60
+PROCESS_MAX_RUN_TIME = 12*60*60
 
 # 验证器每次睡眠的时间，单位秒
 PROC_VALIDATOR_SLEEP = 10
