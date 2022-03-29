@@ -33,12 +33,12 @@ def get_data():
         # .append(recode.)
         # .append(recode.)
         # .append(recode.)
-    show(times, proxy_amounts)
-    show(times, active_proxy_amounts)
-    show(times, fetcher_amounts)
+    show(times, proxy_amounts, "proxy_amounts")
+    show(times, active_proxy_amounts, "active_proxy_amounts")
+    show(times, fetcher_amounts, "fetcher_amounts")
 
 
-def show(times,y_data):
+def show(times, y_data, title):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     # 指定X轴的以日期格式（带小时）显示
@@ -49,7 +49,7 @@ def show(times,y_data):
     plt.ylabel('Data Amount')
 
     plt.gcf().autofmt_xdate()
-    # plt.title(title)
+    plt.title(title)
     plt.plot(times, y_data, "b+")
     # plt.xticks(rotation=90)
     plt.show()
