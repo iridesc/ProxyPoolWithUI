@@ -10,25 +10,37 @@ import run_validator
 import run_fetcher
 from config import PROCESS_MAX_RUN_TIME
 
+
+class TProcess(Process):
+    def __init__(self, target, name):
+        self.target = target
+        self.start_time = 0
+        super().__init__(target=target, name=name)
+
+    def start(self):
+        super().start()
+        self.start_time = time.time()
+
+
 def main():
     processes = [
-        Process(target=run_fetcher.main, name='fetcher'),
-        Process(target=run_validator.main, name='validator'),
-        Process(target=manage.run, name='api'),
+        TProcess(target=manage.run, name='api'),
+        TProcess(target=run_fetcher.main, name='fetcher'),
+        TProcess(target=run_validator.main, name='validator'),
     ]
 
     while True:
         for i, process in enumerate(processes):
+
+            if process.is_alive() and time.time() - process.start_time > PROCESS_MAX_RUN_TIME:
+                log(f'进程 {process.name} 运行超时')
+                process.terminate()
+
             if not process.is_alive():
                 log(f'启动{process.name}进程')
-                p = Process(target=process._target, name=process.name, daemon=True)
+                p = TProcess(target=process.target, name=process.name)
                 p.start()
-                p.start_time = time.time()
                 processes[i] = p
-            if time.time() - processes[i].start_time > PROCESS_MAX_RUN_TIME:
-                log(f'进程 {processes[i].name} 运行超时')
-                processes[i].terminate()
-
         time.sleep(3)
 
 
