@@ -35,6 +35,7 @@ def main():
             if process.is_alive() and time.time() - process.start_time > PROCESS_MAX_RUN_TIME:
                 log(f'进程 {process.name} 运行超时')
                 process.terminate()
+                process.join()
 
             if not process.is_alive():
                 log(f'启动{process.name}进程')
