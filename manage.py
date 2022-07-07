@@ -2,6 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from socket import socket
 
 
 def init():
@@ -24,8 +25,24 @@ def main():
 
 
 def run():
-    execute_from_command_line = init()
-    execute_from_command_line(['manage.py', 'runserver', '0.0.0.0:5000'])
+    is_conflict = check_port_conflict(5000)
+    if not is_conflict:
+        execute_from_command_line = init()
+        execute_from_command_line(['manage.py', 'runserver', '0.0.0.0:5000', '--noreload'])
+
+
+def check_port_conflict(port, host="127.0.0.1"):
+    sock = None
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        sock.connect((host, int(port)))
+        return True
+    except socket.error as why:
+        print(why)
+    finally:
+        sock and sock.close()
+        return False
 
 
 if __name__ == '__main__':

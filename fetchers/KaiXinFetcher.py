@@ -6,6 +6,7 @@ from pyquery import PyQuery as pq
 
 from fetchers.BaseFetcher import BaseFetcher
 
+
 class KaiXinFetcher(BaseFetcher):
     """
     http://www.kxdaili.com/dailiip.html
@@ -36,7 +37,6 @@ class KaiXinFetcher(BaseFetcher):
                     port = tds[1].text().strip()
                     if re.match(ip_regex, ip) is not None and re.match(port_regex, port) is not None:
                         self.proxies.append(('http', ip, int(port)))
-
 
 
 if __name__ == '__main__':
