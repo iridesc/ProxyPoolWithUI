@@ -15,7 +15,7 @@ class TProcess(Process):
     def __init__(self, target, name):
         self.target = target
         self.start_time = 0
-        super().__init__(target=target, name=name)
+        super().__init__(target=target, name=name, daemon=True)
 
     def start(self):
         super().start()
@@ -31,7 +31,6 @@ def main():
 
     while True:
         for i, process in enumerate(processes):
-
             if process.is_alive() and time.time() - process.start_time > PROCESS_MAX_RUN_TIME:
                 log(f'进程 {process.name} 运行超时')
                 process.terminate()
@@ -39,6 +38,7 @@ def main():
 
             if not process.is_alive():
                 log(f'启动{process.name}进程')
+                print("###############################################")
                 p = TProcess(target=process.target, name=process.name)
                 p.start()
                 processes[i] = p

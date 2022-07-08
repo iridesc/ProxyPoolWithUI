@@ -7,10 +7,15 @@ import time
 import os
 import django
 import importlib
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
 from proxy_api.models import Fetcher, StatusRecode
 from fetchers.BaseFetcher import BaseFetcher
+
+VALID_FETCHERS = (
+    "Private*",
+)
 
 
 def main():
@@ -20,6 +25,11 @@ def main():
             # 过滤掉非目标的文件 和 基础类
             if not fetcher_file.endswith("Fetcher.py") or fetcher_file == "BaseFetcher.py":
                 continue
+
+            # 新增fetcher过滤
+            if not fetcher_file.startswith(tuple([valid_prefix.rstrip("*") for valid_prefix in VALID_FETCHERS])):
+                continue
+
             # 获取类名
             fetcher_class_name = fetcher_file.split(".")[0]
             # 根据类名获取FetcherClass
@@ -39,7 +49,7 @@ def main():
                 fetcher = FetcherClass(fetcher_obj)
                 fetcher.run()
 
-        time.sleep(BaseFetcher.fetch_gap/3)
+        time.sleep(BaseFetcher.fetch_gap / 3)
         # 记录系统状态
         print("记录系统状态")
         StatusRecode.make_recode()

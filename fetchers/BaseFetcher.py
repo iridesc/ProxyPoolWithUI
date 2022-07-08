@@ -7,14 +7,16 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
 from proxy_api.models import Fetcher, Proxy
 
+
 class BaseFetcher(object):
     """
     所有爬取器的基类
     """
-    proxies = []
-    fetch_gap = 30*60
+
+    fetch_gap = 60  # 30*60
 
     def __init__(self, fetcher) -> None:
+        self.proxies = []
         self.fetcher = fetcher
 
     def fetch(self):

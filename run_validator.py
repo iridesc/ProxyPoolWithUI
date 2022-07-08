@@ -28,6 +28,17 @@ from config import VALIDATE_TIMEOUT, VALIDATE_MAX_FAILS, VALIDATE_TIME_GAP
 pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError, FunctionTimedOut,
               ChunkedEncodingError, InvalidSchema)
 
+
+def get_cpu_count(expand=2):
+    from multiprocessing import cpu_count
+    if VALIDATE_THREAD_NUM < int(expand):
+        return VALIDATE_THREAD_NUM
+    return cpu_count() * int(expand)
+
+
+CPU_COUNT = get_cpu_count()
+
+
 def main():
     """
     验证器
@@ -42,7 +53,7 @@ def main():
         threads = []
         out_q = Queue()
         proxies = Proxy.objects.filter(
-            to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")[:VALIDATE_THREAD_NUM]
+            to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")[:CPU_COUNT]
         for proxy in proxies:
             thread = threading.Thread(target=validate_thread, args=(proxy, out_q,))
             threads.append(thread)
@@ -101,6 +112,9 @@ def validate_thread(proxy, out_q):
         # 获取验证目标
         target = random.choice(targets)
 
+        # proxies[proxy] = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
+        proxies = {proxy: f'{proxy.ip}:{proxy.port}'}
+
         # 记录验证耗时
         start_time = time.time()
         # 验证可访问性
@@ -109,10 +123,8 @@ def validate_thread(proxy, out_q):
             timeout=VALIDATE_TIMEOUT,
             headers={
                 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'},
-            proxies={
-                'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-                'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-            }
+            proxies=proxies,
+            allow_redirects=False
         )
 
         # 验证访问延时
@@ -134,16 +146,6 @@ def validate_thread(proxy, out_q):
             # 可用 = 整体耗时 < 预设耗时 and 状态码正常
             return int(time_cost*1000)
 
-        # start_time = time.time()
-        # r = requests.get(
-        #     url= 'http://47.113.219.219:8000/proxy_tool/',
-        #     timeout=VALIDATE_TIMEOUT,
-        #     proxies={
-        #         'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-        #         'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-        #     }
-        # )
-        # r.raise_for_status()
     latency_cn, latency_oversea = 9999, 9999
     for protocol in ["http", "https"]:
         if latency_cn == 9999:
