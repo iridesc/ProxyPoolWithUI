@@ -32,7 +32,7 @@ PROC_VALIDATOR_SLEEP = 10
 VALIDATE_THREAD_NUM = 100
 
 # 超时时间，单位s
-VALIDATE_TIMEOUT = 5
+VALIDATE_TIMEOUT = (5, 5)
 
 # 超时时间，单位s
 VALIDATE_TIME_GAP = 30*60
@@ -44,22 +44,22 @@ VALIDATE_MAX_FAILS = 1
 VALIDATE_TARGETS_CN = [
     {
         "url": "www.baidu.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["百度一下", "baidu", "百度"]
     },
     {
         "url": "www.sogou.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["搜狗搜索", "搜狗", "sogou"]
     },
     {
         "url": "weibo.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["微博", "sina", "weibo"]
     },
     {
         "url": "zhihu.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["知乎", "zhihu"]
     },
 ]
@@ -67,22 +67,22 @@ VALIDATE_TARGETS_CN = [
 VALIDATE_TARGETS_OVERSEA = [
     {
         "url": "google.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["google", "谷歌"]
     },
     {
         "url": "duckduckgo.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["duckduckgo"]
     },
     {
         "url": "facebook.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["facebook"]
     },
     {
         "url": "twitter.com",
-        "codes": [200, 301],
+        "codes": [200, 301, 302],
         "keys": ["twitter"]
     },
 ]
