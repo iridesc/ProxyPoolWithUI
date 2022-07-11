@@ -29,7 +29,7 @@ pass_error = (ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPErro
               ChunkedEncodingError, InvalidSchema)
 
 
-def get_cpu_count(expand=2):
+def get_cpu_count(expand=4):
     from multiprocessing import cpu_count
     if VALIDATE_THREAD_NUM < int(expand):
         return VALIDATE_THREAD_NUM
@@ -113,7 +113,10 @@ def validate_thread(proxy, out_q):
         target = random.choice(targets)
 
         # proxies[proxy] = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
-        proxies = {proxy: f'{proxy.ip}:{proxy.port}'}
+        proxies = {
+            'http': f'{proxy.ip}:{proxy.port}',
+            'https': f'{proxy.ip}:{proxy.port}',
+        }
 
         # 记录验证耗时
         start_time = time.time()
@@ -124,7 +127,8 @@ def validate_thread(proxy, out_q):
             headers={
                 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36'},
             proxies=proxies,
-            allow_redirects=False
+            allow_redirects=False,
+            verify=False,
         )
 
         # 验证访问延时
