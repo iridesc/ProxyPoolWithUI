@@ -13,6 +13,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, Rea
 from config import VALIDATOR_SLEEP_TIME, VALIDATE_THREAD_AMOUNT, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
 from config import VALIDATE_TIMEOUT, VALIDATE_TRIES, VALIDATE_TIME_GAP, MAX_VALIDATE_FAILED_COUNT
 
+requests.packages.urllib3.disable_warnings()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
 from proxy_api.models import Proxy
