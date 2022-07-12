@@ -5,7 +5,7 @@
 
 import time
 import os
-from cv2 import log
+from loger import log
 import django
 import importlib
 from fetchers.BaseFetcher import BaseFetcher
