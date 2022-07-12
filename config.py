@@ -4,6 +4,9 @@ from multiprocessing import cpu_count
 # 进程最大运行时间
 PROCESS_MAX_RUN_TIME = 12 * 60 * 60
 
+# 限制最大可用代理数量
+MAX_ALIVE_PROXY_AMOUNT = 50
+
 # 验证器每次睡眠的时间，单位秒
 VALIDATOR_SLEEP_TIME = 10
 
