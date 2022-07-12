@@ -1,44 +1,26 @@
-# encoding: utf-8
+from multiprocessing import cpu_count
 
-"""
-配置文件，一般来说不需要修改
-如果需要启用或者禁用某些网站的爬取器，可在网页上进行配置
-"""
-
-import os
-from fetchers.IP66Fetcher import IP66Fetcher
-from fetchers.GoubanjiaFetcher import GoubanjiaFetcher
-from fetchers.IHuanFetcher import IHuanFetcher
-from fetchers.IP3366Fetcher import IP3366Fetcher
-from fetchers.IP89Fetcher import IP89Fetcher
-from fetchers.JiangxianliFetcher import JiangxianliFetcher
-from fetchers.KaiXinFetcher import KaiXinFetcher
-from fetchers.KuaidailiFetcher import KuaidailiFetcher
-from fetchers.ProxyListFetcher import ProxyListFetcher
-from fetchers.ProxyScrapeFetcher import ProxyScrapeFetcher
-from fetchers.ProxyscanFetcher import ProxyscanFetcher
-from fetchers.UUFetcher import UUFetcher
-from fetchers.XiaoShuFetcher import XiaoShuFetcher
-from fetchers.XiLaFetcher import XiLaFetcher
-from fetchers.MivipFetcher import MivipFetcher
 
 # 进程最大运行时间
-PROCESS_MAX_RUN_TIME = 12*60*60
+PROCESS_MAX_RUN_TIME = 12 * 60 * 60
 
 # 验证器每次睡眠的时间，单位秒
-PROC_VALIDATOR_SLEEP = 10
+VALIDATOR_SLEEP_TIME = 10
 
-# 验证线程数量
-VALIDATE_THREAD_NUM = 100
-
-# 超时时间，单位s
-VALIDATE_TIMEOUT = (5, 5)
+# 验证线程数
+VALIDATE_THREAD_AMOUNT = cpu_count() * 4
 
 # 超时时间，单位s
-VALIDATE_TIME_GAP = 30*60
+VALIDATE_TIMEOUT = 5
 
-# 验证允许失败次数
-VALIDATE_MAX_FAILS = 1
+#  验证时间j间隔
+VALIDATE_TIME_GAP = 15
+
+# 单次验证时 尝试次数
+VALIDATE_TRIES = 2
+
+# 允许验证失败的次数 大于该次数 将会从数据库中删除
+MAX_VALIDATE_FAILED_COUNT = 5
 
 # 验证器 验证目标
 VALIDATE_TARGETS_CN = [
