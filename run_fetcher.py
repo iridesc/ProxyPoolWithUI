@@ -21,7 +21,7 @@ def main():
         validated_proxy_amount =  Proxy.objects.filter(validated=True).count()
         if validated_proxy_amount >= MAX_ALIVE_PROXY_AMOUNT:
             log(f"有效代理充足 {validated_proxy_amount}>={MAX_ALIVE_PROXY_AMOUNT} 跳过本次获取", 4)
-            time.sleep(BaseFetcher.fetch_gap / 3)
+            time.sleep(2)
             continue
 
         any_fetcher_run = False
