@@ -7,20 +7,19 @@ import time
 import os
 import django
 import importlib
-
-from ProxyPool.settings import MAX_ALIVE_PROXY_AMOUNT
+from fetchers.BaseFetcher import BaseFetcher
+from config import MAX_ALIVE_PROXY_AMOUNT
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
 django.setup()
 from proxy_api.models import Fetcher, StatusRecode, Proxy
-from fetchers.BaseFetcher import BaseFetcher
 
 
 def main():
     while True:
         proxies = Proxy.objects.filter(
             to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")
-        if proxies.count() > MAX_ALIVE_PROXY_AMOUNT:
+        if proxies.count() >= MAX_ALIVE_PROXY_AMOUNT:
             time.sleep(BaseFetcher.fetch_gap / 3)
             continue
 
