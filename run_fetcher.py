@@ -5,6 +5,7 @@
 
 import time
 import os
+from cv2 import log
 import django
 import importlib
 from fetchers.BaseFetcher import BaseFetcher
@@ -17,9 +18,9 @@ from proxy_api.models import Fetcher, StatusRecode, Proxy
 
 def main():
     while True:
-        proxies = Proxy.objects.filter(
-            to_validate_time__lt=time.time()).order_by("validated").order_by("to_validate_time")
-        if proxies.count() >= MAX_ALIVE_PROXY_AMOUNT:
+        validated_proxy_amount =  Proxy.objects.filter(validated=True).count()
+        if validated_proxy_amount >= MAX_ALIVE_PROXY_AMOUNT:
+            log(f"有效代理充足 {validated_proxy_amount}>={MAX_ALIVE_PROXY_AMOUNT} 跳过本次获取", 4)
             time.sleep(BaseFetcher.fetch_gap / 3)
             continue
 
