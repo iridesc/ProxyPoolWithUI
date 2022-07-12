@@ -87,7 +87,7 @@ def validate_once(proxy, targets, protocol) -> int:
 
     # 检查关键字
     elif not check_content(r.text, target):
-        raise KeyNotFoundError()
+        raise KeyNotFoundError(target["keys"])
 
     else:
         log("验证通过", 4)
