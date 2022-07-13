@@ -58,11 +58,10 @@ def validate_once(proxy, targets, protocol) -> int:
     # 获取验证目标
     target = random.choice(targets)
 
-    # proxies[proxy] = f'{proxy.protocol}://{proxy.ip}:{proxy.port}'
     # 构建代理
     proxies = {
-        'http': f'{proxy.ip}:{proxy.port}',
-        'https': f'{proxy.ip}:{proxy.port}',
+        'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
+        'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
     }
 
     # 记录验证耗时
