@@ -63,11 +63,15 @@ def api(request):
                 else:
                     query_set = query_set.filter(latency_cn__lt=VALIDATE_TIMEOUT*1000)
 
+                # 检查可用数量
                 pool_size = query_set.count()
-                random_index = random.randint(0, pool_size-1 if pool_size else pool_size)
-                ret_data["proxy"] = model_to_dict(query_set[random_index]) if pool_size else None
-                ret_data["pool_size"] = pool_size
-                ret_data["suc"] = True
+                if pool_size:
+                    random_index = random.randint(0, pool_size-1)
+                    ret_data["proxy"] = model_to_dict(query_set[random_index])
+                    ret_data["pool_size"] = pool_size
+                    ret_data["suc"] = True
+                else:
+                    ret_data["msg"] = "NoAvailableProxy"
             else:
                 ret_data["msg"] = "UnknownReason"
     return JsonResponse(ret_data)
