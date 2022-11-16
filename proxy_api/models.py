@@ -36,6 +36,12 @@ class Proxy(models.Model):
     to_validate_time = models.FloatField(default=0)
     validate_failed_count = models.IntegerField(default=0)
 
+    def __str__(self) -> str:
+        if self.username:
+            return f'{self.protocol}://{self.username}:{self.password}@{self.ip}:{self.port}'
+        else:
+            return f'{self.protocol}://{self.ip}:{self.port}'
+
 
 class StatusRecode(models.Model):
     time = models.FloatField()

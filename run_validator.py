@@ -59,10 +59,8 @@ def validate_once(proxy, targets, protocol) -> int:
     target = random.choice(targets)
 
     # 构建代理
-    proxies = {
-        'http': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-        'https': f'{proxy.protocol}://{proxy.ip}:{proxy.port}',
-    }
+    proxy_str = str(proxy)
+    proxies = {'http': proxy_str, 'https': proxy_str}
 
     # 记录验证耗时
     start_time = time.time()
@@ -173,6 +171,7 @@ def main():
         except Exception:
             traceback.print_exc()
             time.sleep(10)
+
 
 if __name__ == '__main__':
     main()

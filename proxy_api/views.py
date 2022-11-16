@@ -67,7 +67,9 @@ def api(request):
                 pool_size = query_set.count()
                 if pool_size:
                     random_index = random.randint(0, pool_size-1)
-                    ret_data["proxy"] = model_to_dict(query_set[random_index])
+                    proxy = query_set[random_index]
+                    ret_data["proxy"] = model_to_dict()
+                    ret_data["proxy"]["proxy_str"] = str(proxy)
                     ret_data["pool_size"] = pool_size
                     ret_data["suc"] = True
                 else:
