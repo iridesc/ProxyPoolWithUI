@@ -27,6 +27,8 @@ class Proxy(models.Model):
     protocol = models.CharField(max_length=16, choices=PROTOCOL_CHOICES)
     ip = models.CharField(max_length=16)
     port = models.IntegerField()
+    username = models.CharField(max_length=256, null=False, blank=True)
+    password = models.CharField(max_length=256, null=False, blank=True)
     validated = models.BooleanField(default=False)
     latency_cn = models.FloatField(default=0)
     latency_oversea = models.FloatField(default=0)
