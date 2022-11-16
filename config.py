@@ -1,6 +1,5 @@
 from multiprocessing import cpu_count
 
-
 # 进程最大运行时间
 PROCESS_MAX_RUN_TIME = 12 * 60 * 60
 
@@ -10,6 +9,9 @@ MAX_ALIVE_PROXY_AMOUNT = 50
 # 验证器每次睡眠的时间，单位秒
 VALIDATOR_SLEEP_TIME = 10
 
+# 是否验证海外网站的可访问性
+VALIDATE_OVERSEA = False
+
 # 验证线程数
 VALIDATE_THREAD_AMOUNT = cpu_count() * 4
 
@@ -17,7 +19,7 @@ VALIDATE_THREAD_AMOUNT = cpu_count() * 4
 VALIDATE_TIMEOUT = 5
 
 #  验证时间j间隔
-VALIDATE_TIME_GAP = 15
+VALIDATE_TIME_GAP = 120
 
 # 单次验证时 尝试次数
 VALIDATE_TRIES = 2
