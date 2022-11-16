@@ -15,6 +15,8 @@ class PrivateKaiXinFetcher(BaseFetcher):
     # 建议每10-30秒提取一次以尽量及时获取到新上线的代理IP
     fetch_gap = 15
     base_url = "***"
+    username = ""
+    password = ""
 
     def fetch(self):
         """
@@ -26,7 +28,7 @@ class PrivateKaiXinFetcher(BaseFetcher):
             resp = resp.json()
             data = resp["code"] == self.STATUS_OK and resp.get("data") or {}
             for proxy in data.get("proxy_list", []):
-                self.proxies.append(("http", proxy["ip"], int(proxy["port"])))
+                self.proxies.append(("http", proxy["ip"], int(proxy["port"]), self.username, self.password))
 
 
 if __name__ == '__main__':
