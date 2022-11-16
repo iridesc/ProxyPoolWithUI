@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from requests.exceptions import ConnectionError, ConnectTimeout, ProxyError, ReadTimeout, HTTPError,\
     ChunkedEncodingError, InvalidSchema
 from config import VALIDATOR_SLEEP_TIME, VALIDATE_THREAD_AMOUNT, VALIDATE_TARGETS_CN, VALIDATE_TARGETS_OVERSEA
-from config import VALIDATE_TIMEOUT, VALIDATE_TRIES, VALIDATE_TIME_GAP, MAX_VALIDATE_FAILED_COUNT
+from config import VALIDATE_TIMEOUT, VALIDATE_TRIES, VALIDATE_TIME_GAP, MAX_VALIDATE_FAILED_COUNT, VALIDATE_OVERSEA
 
 requests.packages.urllib3.disable_warnings()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProxyPool.settings")
@@ -120,7 +120,7 @@ def validate_thread(proxy):
         if latency_cn == 9999:
             latency_cn = get_latency(proxy=proxy, protocol=protocol, targets=VALIDATE_TARGETS_CN)
 
-        if latency_oversea == 9999:
+        if latency_oversea == 9999 and VALIDATE_OVERSEA:
             latency_oversea = get_latency(proxy=proxy, protocol=protocol, targets=VALIDATE_TARGETS_OVERSEA)
 
     # 记录延迟与 验证时间
@@ -155,21 +155,24 @@ def main():
     从数据库中选出需要验证的代理 进行验证.
     """
     while True:
-        # 获取需要验证的代理
-        proxies = Proxy.objects.filter(to_validate_time__lt=time.time()).order_by(
-            "validated").order_by("to_validate_time")[:VALIDATE_THREAD_AMOUNT]
+        try:
+            # 将获取的代理 放入线程池 进行验证
+            with Pool() as pool:
+                while True:
+                    # 获取需要验证的代理
+                    proxies = Proxy.objects.filter(to_validate_time__lt=time.time()).order_by(
+                        "validated").order_by("to_validate_time")[:VALIDATE_THREAD_AMOUNT]
 
-        if not proxies.count():
-            # 没有需要验证的代理 则 等待一段时间再检查
-            time.sleep(VALIDATOR_SLEEP_TIME)
-            continue
+                    if not proxies.count():
+                        # 没有需要验证的代理 则 等待一段时间再检查
+                        time.sleep(VALIDATOR_SLEEP_TIME)
+                        continue
+                    results = [result for result in pool.map(validate_thread, proxies)]
+                    log(f"passed: {sum(results)}/{len(results) }")
 
-        # 将获取的代理 放入线程池 进行验证
-        with Pool() as pool:
-            results = [result for result in pool.map(validate_thread, proxies)]
-
-        log(f"passed: {sum(results)}/{len(results) }")
-
+        except Exception:
+            traceback.print_exc()
+            time.sleep(10)
 
 if __name__ == '__main__':
     main()
